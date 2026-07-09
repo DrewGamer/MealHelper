@@ -30,8 +30,8 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 |---|---|---|---|---|
 | T1 | Initial Architecture | done | xp-architect | - |
 | T2 | Phase 1: Core Setup & Single-User Flow | done | xp-developer | T1 |
-| T3 | Phase 2: Weekly Plan Engine | in_progress | xp-developer | T2 |
-| T4 | Phase 3: Auth Enhancements | pending | xp-developer | T2 |
+| T3 | Phase 2: Weekly Plan Engine | done | xp-developer | T2 |
+| T4 | Phase 3: Auth Enhancements | in_progress | xp-developer | T2 |
 | T5 | Phase 4: Collaboration | pending | xp-developer | T2, T3 |
 
 ## 5. Sub-Agent Coordination

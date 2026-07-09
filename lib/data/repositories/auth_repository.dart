@@ -20,6 +20,35 @@ class AuthRepository {
     }
   }
 
+  Future<User?> signInWithEmailAndPassword(String email, String password) async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return userCredential.user;
+    } catch (e) {
+      debugPrint('Failed to sign in with email: $e');
+      rethrow;
+    }
+  }
+
+  Future<User?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (e) {
+      debugPrint('Failed to sign in with Google: $e');
+      rethrow;
+    }
+  }
+
   /// Links the current anonymous account to an Email & Password
   Future<User?> linkWithEmailAndPassword(String email, String password) async {
     try {

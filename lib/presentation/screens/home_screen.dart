@@ -1,0 +1,47 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers.dart';
+import 'meal_detail_screen.dart';
+
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mealsAsyncValue = ref.watch(mealsStreamProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Meals'),
+      ),
+      body: mealsAsyncValue.when(
+        data: (meals) {
+          if (meals.isEmpty) {
+            return const Center(child: Text('No meals found. Add some!'));
+          }
+          return ListView.builder(
+            itemCount: meals.length,
+            itemBuilder: (context, index) {
+              final meal = meals[index];
+              return ListTile(
+                title: Text(meal.name),
+                subtitle: Text(meal.tags.join(', ')),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => MealDetailScreen(meal: meal)));
+                },
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text('Error loading meals: $e')),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const MealDetailScreen()));
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}

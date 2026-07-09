@@ -6,7 +6,7 @@ class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  Stream<User?> get authStateChanges => _auth.userChanges();
 
   User? get currentUser => _auth.currentUser;
 
@@ -25,7 +25,8 @@ class AuthRepository {
     try {
       final credential = EmailAuthProvider.credential(email: email, password: password);
       final userCredential = await _auth.currentUser?.linkWithCredential(credential);
-      return userCredential?.user;
+      await userCredential?.user?.reload();
+      return _auth.currentUser;
     } catch (e) {
       debugPrint('Failed to link with email: $e');
       rethrow;
@@ -45,7 +46,8 @@ class AuthRepository {
       );
 
       final userCredential = await _auth.currentUser?.linkWithCredential(credential);
-      return userCredential?.user;
+      await userCredential?.user?.reload();
+      return _auth.currentUser;
     } catch (e) {
       debugPrint('Failed to link with Google: $e');
       rethrow;

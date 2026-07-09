@@ -38,11 +38,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'dummy-api-key',
-    appId: '1:1234567890:android:1234567890',
-    messagingSenderId: 'dummy-sender-id',
-    projectId: 'dummy-project-id',
-    storageBucket: 'dummy-storage-bucket',
+    apiKey: 'AIzaSyA2N47URJABXCCs6X3PSXSTW5nhW3dgmv8',
+    appId: '1:391863072878:android:e649b9639e318d42ee4e7f',
+    messagingSenderId: '391863072878',
+    projectId: 'meal-helper-16fd5',
+    storageBucket: 'meal-helper-16fd5.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

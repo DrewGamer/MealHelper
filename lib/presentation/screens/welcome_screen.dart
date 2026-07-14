@@ -28,17 +28,19 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   }
 
   Future<void> _signInGuest() async {
-    ref.read(isAuthenticatingProvider.notifier).state = true;
+    final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+    authNotifier.state = true;
     try {
       await ref.read(authRepositoryProvider).signInAnonymously();
     } catch (e) {
       _showError('Failed to sign in as guest.');
     }
-    ref.read(isAuthenticatingProvider.notifier).state = false;
+    authNotifier.state = false;
   }
 
   Future<void> _signInGoogle() async {
-    ref.read(isAuthenticatingProvider.notifier).state = true;
+    final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+    authNotifier.state = true;
     try {
       await ref.read(authRepositoryProvider).signInWithGoogle();
     } on FirebaseAuthException catch (e) {
@@ -46,13 +48,14 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     } catch (e) {
       _showError('Failed to sign in with Google.');
     }
-    ref.read(isAuthenticatingProvider.notifier).state = false;
+    authNotifier.state = false;
   }
 
   Future<void> _signInEmail() async {
     final result = await _showEmailPasswordDialog('Sign In with Email', 'Sign In');
     if (result == true) {
-      ref.read(isAuthenticatingProvider.notifier).state = true;
+      final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+      authNotifier.state = true;
       try {
         await ref.read(authRepositoryProvider).signInWithEmailAndPassword(
           _emailController.text.trim(),
@@ -63,7 +66,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       } catch (e) {
         _showError('Failed to sign in with Email.');
       }
-      ref.read(isAuthenticatingProvider.notifier).state = false;
+      authNotifier.state = false;
     }
   }
 

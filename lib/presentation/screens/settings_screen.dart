@@ -51,7 +51,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (confirm != true) return;
 
     setState(() => _isLoading = true);
-    ref.read(isAuthenticatingProvider.notifier).state = true;
+    final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+    authNotifier.state = true;
     try {
       final user = await ref.read(authRepositoryProvider).signInWithGoogle();
       if (user != null) _showSuccess('Successfully signed in!');
@@ -60,7 +61,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       _showError('Failed to sign in.');
     }
-    ref.read(isAuthenticatingProvider.notifier).state = false;
+    authNotifier.state = false;
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -90,7 +91,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final result = await _showEmailPasswordDialog('Sign In to Existing Account', 'Sign In');
     if (result == true) {
       setState(() => _isLoading = true);
-      ref.read(isAuthenticatingProvider.notifier).state = true;
+      final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+      authNotifier.state = true;
       try {
         final user = await ref.read(authRepositoryProvider).signInWithEmailAndPassword(
           _emailController.text.trim(),
@@ -102,7 +104,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } catch (e) {
         _showError('Failed to sign in.');
       }
-      ref.read(isAuthenticatingProvider.notifier).state = false;
+      authNotifier.state = false;
       if (mounted) setState(() => _isLoading = false);
     }
   }

@@ -31,13 +31,13 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 | T1 | Initial Architecture | done | xp-architect | - |
 | T2 | Phase 1: Core Setup & Single-User Flow | done | xp-developer | T1 |
 | T3 | Phase 2: Weekly Plan Engine | done | xp-developer | T2 |
-| T4 | Phase 3: Auth Enhancements | in_progress | xp-developer | T2 |
+| T4 | Phase 3: Auth Enhancements | done | xp-developer | T2 |
 | T5 | Phase 4: Collaboration | pending | xp-developer | T2, T3 |
 
 ## 5. Sub-Agent Coordination
-*Handoff Note:* The user has successfully implemented and tested Phase 3 (Auth Enhancements) up to `v0.3.3-alpha`. Before starting Phase 4, the user has a few more UI/UX "quirks" they want to review and fix in the next session. Wait for their direction on those quirks before proceeding to Phase 4.
+*Handoff Note:* The user has successfully implemented and tested Phase 3 (Auth Enhancements) up to `v0.3.4-alpha`. Before starting Phase 4, the user has a few more UI/UX "quirks" they want to review and fix in the next session. Wait for their direction on those quirks before proceeding to Phase 4.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved
 - [ ] PR 1 Reviewed & Approved
-- [ ] Release Package Generated
+- [x] Release Package Generated

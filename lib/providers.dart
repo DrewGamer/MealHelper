@@ -22,7 +22,14 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
-final isAuthenticatingProvider = StateProvider<bool>((ref) => false);
+class IsAuthenticatingNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+}
+
+final isAuthenticatingProvider = NotifierProvider<IsAuthenticatingNotifier, bool>(() {
+  return IsAuthenticatingNotifier();
+});
 
 final activeDatabaseIdProvider = Provider<String?>((ref) {
   final user = ref.watch(authStateProvider).value;

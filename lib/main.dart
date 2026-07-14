@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/firebase_options.dart';
 import 'providers.dart';
 import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/welcome_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,12 +41,15 @@ class AuthWrapper extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
+    final isAuthenticating = ref.watch(isAuthenticatingProvider);
 
     return authState.when(
       data: (user) {
-        if (user == null) {
-          Future.microtask(() => ref.read(authRepositoryProvider).signInAnonymously());
+        if (isAuthenticating) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        if (user == null) {
+          return const WelcomeScreen();
         }
         return const HomeScreen();
       },

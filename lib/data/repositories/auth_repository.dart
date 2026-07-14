@@ -22,6 +22,11 @@ class AuthRepository {
 
   Future<User?> signInWithEmailAndPassword(String email, String password) async {
     try {
+      final currentUser = _auth.currentUser;
+      if (currentUser != null && currentUser.isAnonymous) {
+        await currentUser.delete();
+      }
+
       final userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       return userCredential.user;
     } catch (e) {
@@ -40,6 +45,11 @@ class AuthRepository {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
+
+      final currentUser = _auth.currentUser;
+      if (currentUser != null && currentUser.isAnonymous) {
+        await currentUser.delete();
+      }
 
       final userCredential = await _auth.signInWithCredential(credential);
       return userCredential.user;

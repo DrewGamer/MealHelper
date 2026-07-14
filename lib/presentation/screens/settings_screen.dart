@@ -51,6 +51,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (confirm != true) return;
 
     setState(() => _isLoading = true);
+    ref.read(isAuthenticatingProvider.notifier).state = true;
     try {
       final user = await ref.read(authRepositoryProvider).signInWithGoogle();
       if (user != null) _showSuccess('Successfully signed in!');
@@ -59,7 +60,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       _showError('Failed to sign in.');
     }
-    setState(() => _isLoading = false);
+    ref.read(isAuthenticatingProvider.notifier).state = false;
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _linkEmail() async {
@@ -88,6 +90,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final result = await _showEmailPasswordDialog('Sign In to Existing Account', 'Sign In');
     if (result == true) {
       setState(() => _isLoading = true);
+      ref.read(isAuthenticatingProvider.notifier).state = true;
       try {
         final user = await ref.read(authRepositoryProvider).signInWithEmailAndPassword(
           _emailController.text.trim(),
@@ -99,7 +102,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } catch (e) {
         _showError('Failed to sign in.');
       }
-      setState(() => _isLoading = false);
+      ref.read(isAuthenticatingProvider.notifier).state = false;
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -174,8 +178,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _signOut() async {
     setState(() => _isLoading = true);
     await ref.read(authRepositoryProvider).signOut();
-    setState(() => _isLoading = false);
-    _showSuccess('Signed out. You are now in a new anonymous session.');
+    if (mounted) setState(() => _isLoading = false);
+    _showSuccess('Signed out successfully.');
   }
 
   @override

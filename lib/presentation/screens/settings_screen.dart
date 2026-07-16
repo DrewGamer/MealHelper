@@ -24,90 +24,211 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showError(String msg) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
   
   void _showSuccess(String msg) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.green));
   }
 
-  Future<void> _linkGoogle() async {
-    setState(() => _isLoading = true);
+  Future<String?> _showThreeWayDialog(String title, String content, String option1, String option2) {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, 'cancel'), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, 'fresh'), child: Text(option2)),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, 'keep'), child: Text(option1)),
+        ],
+      )
+    );
+  }
+
+  Future<void> _handleGoogleFlow(bool isLoginIntent) async {
+    if (mounted) setState(() => _isLoading = true);
     try {
-      final user = await ref.read(authRepositoryProvider).linkWithGoogle();
-      if (user != null) {
-        _showSuccess('Successfully linked Google account!');
+      final credential = await ref.read(authRepositoryProvider).getGoogleCredential();
+      if (credential == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
       }
-    } on FirebaseAuthException catch (e) {
-      _showError(e.message ?? 'An error occurred linking Google.');
+
+      if (isLoginIntent) {
+        // Direct Login Intent - Optimistic Link
+        try {
+          await ref.read(authRepositoryProvider).linkWithGoogleCredential(credential);
+          
+          // If we reach here, the account did NOT exist and was just created/linked.
+          if (mounted) setState(() => _isLoading = false);
+          final choice = await _showThreeWayDialog(
+            'Account Created',
+            'No existing account was found for this Google profile, so a new one was created. Would you like to link your guest data to it, or start fresh?',
+            'Keep Guest Data',
+            'Start Fresh'
+          );
+
+          if (choice == 'keep') {
+            if (mounted) _showSuccess('Account created and guest data preserved!');
+          } else if (choice == 'fresh') {
+            if (mounted) setState(() => _isLoading = true);
+            final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+            authNotifier.set(true);
+            try {
+              await FirebaseAuth.instance.currentUser?.delete();
+              await ref.read(authRepositoryProvider).signInWithGoogleCredential(credential);
+              if (mounted) _showSuccess('Fresh account created!');
+            } finally {
+              authNotifier.reset();
+            }
+          } else {
+            // Cancel -> undo the creation
+            if (mounted) setState(() => _isLoading = true);
+            await FirebaseAuth.instance.currentUser?.unlink('google.com');
+            if (mounted) _showSuccess('Cancelled. You are still a guest.');
+          }
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'credential-already-in-use') {
+            if (mounted) setState(() => _isLoading = false);
+            final confirm = await _showWarningDialog(
+              'Account Exists', 
+              'This Google account already exists. Logging in will discard your guest data. Proceed?'
+            );
+            if (confirm == true) {
+              if (mounted) setState(() => _isLoading = true);
+              final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+              authNotifier.set(true);
+              try {
+                // Safe to delete since we know they want to log in
+                await FirebaseAuth.instance.currentUser?.delete();
+                await ref.read(authRepositoryProvider).signInWithGoogleCredential(credential);
+                if (mounted) _showSuccess('Successfully signed in!');
+              } finally {
+                authNotifier.reset();
+              }
+            }
+          } else {
+            if (mounted) _showError(e.message ?? 'An error occurred with Google Sign-In.');
+          }
+        }
+      } else {
+        // Link Intent
+        try {
+          await ref.read(authRepositoryProvider).linkWithGoogleCredential(credential);
+          if (mounted) _showSuccess('Successfully linked Google account! Your meals are saved.');
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'credential-already-in-use') {
+            if (mounted) _showError('This Google account is already registered to someone else.');
+          } else {
+            if (mounted) _showError(e.message ?? 'An error occurred linking Google account.');
+          }
+        }
+      }
     } catch (e) {
-      _showError('Failed to link account.');
-    }
-    setState(() => _isLoading = false);
-  }
-
-  Future<void> _signInGoogle() async {
-    final confirm = await _showWarningDialog('Sign In', 'This will discard your current anonymous meals. Proceed?');
-    if (confirm != true) return;
-
-    setState(() => _isLoading = true);
-    final authNotifier = ref.read(isAuthenticatingProvider.notifier);
-    authNotifier.state = true;
-    try {
-      final user = await ref.read(authRepositoryProvider).signInWithGoogle();
-      if (user != null) _showSuccess('Successfully signed in!');
-    } on FirebaseAuthException catch (e) {
-      _showError(e.message ?? 'Error signing in.');
-    } catch (e) {
-      _showError('Failed to sign in.');
-    }
-    authNotifier.state = false;
-    if (mounted) setState(() => _isLoading = false);
-  }
-
-  Future<void> _linkEmail() async {
-    final result = await _showEmailPasswordDialog('Link Email Account', 'Link');
-    if (result == true) {
-      setState(() => _isLoading = true);
-      try {
-        final user = await ref.read(authRepositoryProvider).linkWithEmailAndPassword(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
-        if (user != null) _showSuccess('Successfully linked Email account!');
-      } on FirebaseAuthException catch (e) {
-        _showError(e.message ?? 'An error occurred linking Email.');
-      } catch (e) {
-        _showError('Failed to link account.');
-      }
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _signInEmail() async {
-    final confirm = await _showWarningDialog('Sign In', 'This will discard your current anonymous meals. Proceed?');
-    if (confirm != true) return;
-
-    final result = await _showEmailPasswordDialog('Sign In to Existing Account', 'Sign In');
-    if (result == true) {
-      setState(() => _isLoading = true);
-      final authNotifier = ref.read(isAuthenticatingProvider.notifier);
-      authNotifier.state = true;
-      try {
-        final user = await ref.read(authRepositoryProvider).signInWithEmailAndPassword(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
-        if (user != null) _showSuccess('Successfully signed in!');
-      } on FirebaseAuthException catch (e) {
-        _showError(e.message ?? 'Invalid email or password.');
-      } catch (e) {
-        _showError('Failed to sign in.');
-      }
-      authNotifier.state = false;
+      if (mounted) _showError('Failed to complete Google flow.');
+    } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  Future<void> _handleEmailFlow(bool isLoginIntent) async {
+    final title = isLoginIntent ? 'Sign In to Existing Account' : 'Link Email Account';
+    final action = isLoginIntent ? 'Sign In' : 'Link';
+    
+    final result = await _showEmailPasswordDialog(title, action);
+    if (result != true) return;
+
+    if (mounted) setState(() => _isLoading = true);
+    
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    try {
+      if (isLoginIntent) {
+        // Direct Login Intent - Optimistic Link
+        try {
+          await ref.read(authRepositoryProvider).linkWithEmailAndPassword(email, password);
+          
+          // If we reach here, the account did NOT exist and was just created/linked.
+          if (mounted) setState(() => _isLoading = false);
+          final choice = await _showThreeWayDialog(
+            'Account Created',
+            'No existing account was found for this email, so a new one was created. Would you like to link your guest data to it, or start fresh?',
+            'Keep Guest Data',
+            'Start Fresh'
+          );
+
+          if (choice == 'keep') {
+            if (mounted) _showSuccess('Account created and guest data preserved!');
+          } else if (choice == 'fresh') {
+            if (mounted) setState(() => _isLoading = true);
+            final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+            authNotifier.set(true);
+            try {
+              await FirebaseAuth.instance.currentUser?.delete();
+              await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+              if (mounted) _showSuccess('Fresh account created!');
+            } finally {
+              authNotifier.reset();
+            }
+          } else {
+            // Cancel -> undo the creation
+            if (mounted) setState(() => _isLoading = true);
+            await FirebaseAuth.instance.currentUser?.unlink('password');
+            if (mounted) _showSuccess('Cancelled. You are still a guest.');
+          }
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'email-already-in-use' || e.code == 'credential-already-in-use') {
+            if (mounted) setState(() => _isLoading = false);
+            final confirm = await _showWarningDialog(
+              'Account Exists', 
+              'This email is already registered. Logging in will discard your guest data. Proceed?'
+            );
+            if (confirm == true) {
+              if (mounted) setState(() => _isLoading = true);
+              final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+              authNotifier.set(true);
+              try {
+                await ref.read(authRepositoryProvider).signInWithEmailAndPassword(email, password);
+                if (mounted) _showSuccess('Successfully signed in!');
+              } on FirebaseAuthException catch (signInError) {
+                if (mounted) _showError(signInError.message ?? 'Invalid email or password.');
+              } finally {
+                authNotifier.reset();
+              }
+            }
+          } else {
+            if (mounted) _showError(e.message ?? 'An error occurred with Email Sign-In.');
+          }
+        }
+      } else {
+        // Link Intent
+        try {
+          await ref.read(authRepositoryProvider).linkWithEmailAndPassword(email, password);
+          if (mounted) _showSuccess('Successfully linked Email account! Your meals are saved.');
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'email-already-in-use' || e.code == 'credential-already-in-use') {
+             if (mounted) _showError('This email is already registered to someone else.');
+          } else {
+            if (mounted) _showError(e.message ?? 'An error occurred linking Email account.');
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) _showError('Failed to complete Email flow.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _linkGoogle() => _handleGoogleFlow(false);
+  Future<void> _signInGoogle() => _handleGoogleFlow(true);
+  Future<void> _linkEmail() => _handleEmailFlow(false);
+  Future<void> _signInEmail() => _handleEmailFlow(true);
 
   Future<bool?> _showWarningDialog(String title, String content) {
     return showDialog<bool>(

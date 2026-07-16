@@ -33,11 +33,13 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 | T3 | Phase 2: Weekly Plan Engine | done | xp-developer | T2 |
 | T4 | Phase 3: Auth Enhancements | done | xp-developer | T2 |
 | T5 | Phase 4: Collaboration | pending | xp-developer | T2, T3 |
+| T6 | Bugfix: Guest-to-login perpetual loading screen | done | xp-developer | T4 |
+| T7 | Bugfix: Guest login edge cases (smart linking) | done | xp-developer | T6 |
 
 ## 5. Sub-Agent Coordination
-*Handoff Note:* The user has successfully implemented and tested Phase 3 (Auth Enhancements) up to `v0.3.4-alpha`. Before starting Phase 4, the user has a few more UI/UX "quirks" they want to review and fix in the next session. Wait for their direction on those quirks before proceeding to Phase 4.
+*Handoff Note:* Bug reported: signing in as guest, then logging in via settings (Google or Email) causes a perpetual loading screen. Root cause identified: `isAuthenticatingProvider` state gets stuck at `true` because the `SettingsScreen` widget is unmounted mid-sign-in when `AuthWrapper` rebuilds on auth state change, preventing the `finally` block from resetting the flag via the now-detached `ref`.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved
-- [ ] PR 1 Reviewed & Approved
+- [x] PR Review Approved (T6 Bugfix)
 - [x] Release Package Generated

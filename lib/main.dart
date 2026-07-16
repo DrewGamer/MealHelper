@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/firebase_options.dart';
 import 'providers.dart';
@@ -43,6 +44,19 @@ class AuthWrapper extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final isAuthenticating = ref.watch(isAuthenticatingProvider);
 
+    // Safety net: auto-reset the authenticating flag when auth state
+    // resolves to a valid user. This handles the case where the
+    // SettingsScreen is disposed mid-sign-in before its finally block
+    // can reset the flag (e.g., guest → Google/Email login).
+    ref.listen<AsyncValue<User?>>(authStateProvider, (previous, next) {
+      next.whenData((user) {
+        if (user != null && ref.read(isAuthenticatingProvider)) {
+          // Auth completed successfully — clear the loading flag.
+          ref.read(isAuthenticatingProvider.notifier).reset();
+        }
+      });
+    });
+
     return authState.when(
       data: (user) {
         if (isAuthenticating) {
@@ -58,3 +72,4 @@ class AuthWrapper extends ConsumerWidget {
     );
   }
 }
+

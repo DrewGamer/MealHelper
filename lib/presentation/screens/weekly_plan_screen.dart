@@ -79,7 +79,7 @@ class _WeeklyPlanScreenState extends ConsumerState<WeeklyPlanScreen> {
       helpText: 'Select Start Date for Week',
     );
     if (picked != null) {
-      final dbId = ref.read(activeDatabaseIdProvider);
+      final dbId = ref.read(activeDatabaseIdStreamProvider).value;
       if (dbId == null) return;
       
       // Zero out time for consistency
@@ -124,7 +124,7 @@ class _WeeklyPlanScreenState extends ConsumerState<WeeklyPlanScreen> {
       },
     );
 
-    final dbId = ref.read(activeDatabaseIdProvider);
+    final dbId = ref.read(activeDatabaseIdStreamProvider).value;
     if (dbId == null) return;
 
     final newMealIds = Map<int, String>.from(plan.mealIdsByDay);

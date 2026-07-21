@@ -32,7 +32,7 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 | T2 | Phase 1: Core Setup & Single-User Flow | done | xp-developer | T1 |
 | T3 | Phase 2: Weekly Plan Engine | done | xp-developer | T2 |
 | T4 | Phase 3: Auth Enhancements | done | xp-developer | T2 |
-| T5 | Phase 4: Collaboration | pending | xp-developer | T2, T3 |
+| T5 | Phase 4: Collaboration | done | xp-developer | T2, T3 |
 | T6 | Bugfix: Guest-to-login perpetual loading screen | done | xp-developer | T4 |
 | T7 | Bugfix: Guest login edge cases (smart linking) | done | xp-developer | T6 |
 
@@ -42,4 +42,5 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 ## 6. Checkpoints & History
 - [x] Architecture Approved
 - [x] PR Review Approved (T6 Bugfix)
+- [x] PR Review Approved (T5 Collaboration)
 - [x] Release Package Generated

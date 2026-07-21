@@ -39,13 +39,16 @@ final isAuthenticatingProvider = NotifierProvider<IsAuthenticatingNotifier, bool
   return IsAuthenticatingNotifier();
 });
 
-final activeDatabaseIdProvider = Provider<String?>((ref) {
+final activeDatabaseIdStreamProvider = StreamProvider<String?>((ref) {
   final user = ref.watch(authStateProvider).value;
-  return user?.uid;
+  if (user == null) {
+    return Stream.value(null);
+  }
+  return ref.watch(databaseRepositoryProvider).streamActiveDatabaseId(user.uid);
 });
 
 final mealsStreamProvider = StreamProvider<List<Meal>>((ref) {
-  final dbId = ref.watch(activeDatabaseIdProvider);
+  final dbId = ref.watch(activeDatabaseIdStreamProvider).value;
   if (dbId == null) {
     return Stream.value([]);
   }
@@ -53,7 +56,7 @@ final mealsStreamProvider = StreamProvider<List<Meal>>((ref) {
 });
 
 final plansStreamProvider = StreamProvider<List<WeeklyPlan>>((ref) {
-  final dbId = ref.watch(activeDatabaseIdProvider);
+  final dbId = ref.watch(activeDatabaseIdStreamProvider).value;
   if (dbId == null) {
     return Stream.value([]);
   }

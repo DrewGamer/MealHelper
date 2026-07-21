@@ -50,6 +50,9 @@ class AuthWrapper extends ConsumerWidget {
     // can reset the flag (e.g., guest → Google/Email login).
     ref.listen<AsyncValue<User?>>(authStateProvider, (previous, next) {
       next.whenData((user) {
+        if (user != null) {
+          ref.read(databaseRepositoryProvider).initializeUserIfNeeded(user.uid, user.email);
+        }
         if (user != null && ref.read(isAuthenticatingProvider)) {
           // Auth completed successfully — clear the loading flag.
           ref.read(isAuthenticatingProvider.notifier).reset();

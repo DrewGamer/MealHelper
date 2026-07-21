@@ -37,7 +37,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
 
   void _saveMeal() async {
     if (_formKey.currentState!.validate()) {
-      final dbId = ref.read(activeDatabaseIdProvider);
+      final dbId = ref.read(activeDatabaseIdStreamProvider).value;
       final userId = ref.read(authRepositoryProvider).currentUser?.uid;
       
       if (dbId == null || userId == null) return;
@@ -73,7 +73,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
 
   void _deleteMeal() async {
     if (widget.meal != null) {
-      final dbId = ref.read(activeDatabaseIdProvider);
+      final dbId = ref.read(activeDatabaseIdStreamProvider).value;
       if (dbId != null) {
         await ref.read(databaseRepositoryProvider).deleteMeal(dbId, widget.meal!.id);
       }

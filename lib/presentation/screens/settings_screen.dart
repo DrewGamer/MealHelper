@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'collaboration_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -331,6 +332,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 leading: const Icon(Icons.person),
                 title: Text(isAnonymous ? 'Anonymous User' : (user.email ?? 'Linked Account')),
                 subtitle: Text('Providers: ${providers.isEmpty ? 'None' : providers.join(', ')}'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.group),
+                title: const Text('Collaboration & Workspaces'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CollaborationScreen()),
+                  );
+                },
               ),
               const Divider(),
               const Padding(

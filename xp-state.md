@@ -2,11 +2,11 @@
 
 ## 1. Project Context
 **Project Name:** MealHelper
-**Current Stage:** Architecture
+**Current Stage:** Development
 **Primary Tech Stack:**
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Design architecture for a mobile app for keeping a database of meals and creating a weekly meal list.
+**Current Objective:** Implement user-managed ingredient lists (protein sources + ingredients) with a new Ingredient Manager tab, cascade rename/delete, and Meal form integration. See approved plan: `ingredient_lists_plan.md`.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
@@ -36,9 +36,16 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 | T6 | Bugfix: Guest-to-login perpetual loading screen | done | xp-developer | T4 |
 | T7 | Bugfix: Guest login edge cases (smart linking) | done | xp-developer | T6 |
 | T8 | Bugfix: Guest to Google login flow & account persistence | done | xp-developer | T7 |
+| T9 | Data Layer: Ingredient Options & Meal Model Enhancements | pending | xp-developer | T5 |
+| T10 | Ingredient Manager UI (4th bottom tab) | pending | xp-developer | T9 |
+| T11 | Meal Form Integration (protein dropdown + ingredient chips) | pending | xp-developer | T9, T10 |
 
 ## 5. Sub-Agent Coordination
-*Handoff Note:* Bug reported for Google login: When starting as a guest and logging in with an existing Google account from Settings, if it says the account already exists and the user proceeds, it kicks them back to the main login screen (unlike email login which works). Additionally, the failed Google login persists the chosen account, so subsequent Google login attempts automatically use the last selected account without asking.
+*Handoff Note:* Approved plans on file:
+- `ingredient_lists_plan.md` — User-managed ingredient lists feature (T9–T11). **Start here next session.**
+- `smart_meal_randomizer_plan.md` — Shelved until ingredient lists are complete. Depends on T9–T11 being done first.
+
+Key design decisions for T9–T11: Remove `tags` field from Meal model. No starter data. Cascade-rename and cascade-delete ingredients across meals (with confirmation dialog listing affected meals). Alphabetical sort. Food-inclusive icon for the 4th bottom tab.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved
@@ -46,3 +53,5 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 - [x] PR Review Approved (T5 Collaboration)
 - [x] PR Review Approved (T8 Bugfix)
 - [x] Release Package Generated
+- [x] Ingredient Lists Plan Approved
+- [x] Smart Meal Randomizer Plan Approved (shelved, pending T9–T11)

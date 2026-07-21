@@ -35,12 +35,14 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 | T5 | Phase 4: Collaboration | done | xp-developer | T2, T3 |
 | T6 | Bugfix: Guest-to-login perpetual loading screen | done | xp-developer | T4 |
 | T7 | Bugfix: Guest login edge cases (smart linking) | done | xp-developer | T6 |
+| T8 | Bugfix: Guest to Google login flow & account persistence | done | xp-developer | T7 |
 
 ## 5. Sub-Agent Coordination
-*Handoff Note:* Bug reported: signing in as guest, then logging in via settings (Google or Email) causes a perpetual loading screen. Root cause identified: `isAuthenticatingProvider` state gets stuck at `true` because the `SettingsScreen` widget is unmounted mid-sign-in when `AuthWrapper` rebuilds on auth state change, preventing the `finally` block from resetting the flag via the now-detached `ref`.
+*Handoff Note:* Bug reported for Google login: When starting as a guest and logging in with an existing Google account from Settings, if it says the account already exists and the user proceeds, it kicks them back to the main login screen (unlike email login which works). Additionally, the failed Google login persists the chosen account, so subsequent Google login attempts automatically use the last selected account without asking.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved
 - [x] PR Review Approved (T6 Bugfix)
 - [x] PR Review Approved (T5 Collaboration)
+- [x] PR Review Approved (T8 Bugfix)
 - [x] Release Package Generated

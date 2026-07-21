@@ -89,6 +89,10 @@ class AuthRepository {
     }
   }
 
+  Future<void> googleSignOut() async {
+    await _googleSignIn.signOut();
+  }
+
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();

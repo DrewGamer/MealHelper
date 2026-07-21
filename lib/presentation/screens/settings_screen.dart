@@ -78,10 +78,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           } else if (choice == 'fresh') {
             if (mounted) setState(() => _isLoading = true);
             final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+            final authRepo = ref.read(authRepositoryProvider);
             authNotifier.set(true);
             try {
               await FirebaseAuth.instance.currentUser?.delete();
-              await ref.read(authRepositoryProvider).signInWithGoogleCredential(credential);
+              await authRepo.signInWithGoogleCredential(credential);
               if (mounted) _showSuccess('Fresh account created!');
             } finally {
               authNotifier.reset();
@@ -90,6 +91,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Cancel -> undo the creation
             if (mounted) setState(() => _isLoading = true);
             await FirebaseAuth.instance.currentUser?.unlink('google.com');
+            await ref.read(authRepositoryProvider).googleSignOut();
             if (mounted) _showSuccess('Cancelled. You are still a guest.');
           }
         } on FirebaseAuthException catch (e) {
@@ -102,18 +104,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (confirm == true) {
               if (mounted) setState(() => _isLoading = true);
               final authNotifier = ref.read(isAuthenticatingProvider.notifier);
+              final authRepo = ref.read(authRepositoryProvider);
               authNotifier.set(true);
               try {
-                // Safe to delete since we know they want to log in
                 await FirebaseAuth.instance.currentUser?.delete();
-                await ref.read(authRepositoryProvider).signInWithGoogleCredential(credential);
+                await authRepo.signInWithGoogleCredential(credential);
                 if (mounted) _showSuccess('Successfully signed in!');
               } finally {
                 authNotifier.reset();
               }
+            } else {
+              await ref.read(authRepositoryProvider).googleSignOut();
             }
           } else {
             if (mounted) _showError(e.message ?? 'An error occurred with Google Sign-In.');
+            await ref.read(authRepositoryProvider).googleSignOut();
           }
         }
       } else {
@@ -127,6 +132,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           } else {
             if (mounted) _showError(e.message ?? 'An error occurred linking Google account.');
           }
+          await ref.read(authRepositoryProvider).googleSignOut();
         }
       }
     } catch (e) {

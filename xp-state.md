@@ -6,7 +6,7 @@
 **Primary Tech Stack:**
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Implement user-managed ingredient lists (protein sources + ingredients) with a new Ingredient Manager tab, cascade rename/delete, and Meal form integration. See approved plan: `ingredient_lists_plan.md`.
+**Current Objective:** Implement user-managed ingredient lists (protein sources + ingredients) with a new Ingredient Manager tab, cascade rename/delete, and Meal form integration. See approved plan: `.agents/plans/ingredient_lists_plan.md`.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
@@ -42,8 +42,8 @@ Flutter cross-platform mobile app with a Firebase backend. Follows Clean Archite
 
 ## 5. Sub-Agent Coordination
 *Handoff Note:* Approved plans on file:
-- `ingredient_lists_plan.md` — User-managed ingredient lists feature (T9–T11). **Start here next session.**
-- `smart_meal_randomizer_plan.md` — Shelved until ingredient lists are complete. Depends on T9–T11 being done first.
+- `.agents/plans/ingredient_lists_plan.md` — User-managed ingredient lists feature (T9–T11). **Start here next session.**
+- `.agents/plans/smart_meal_randomizer_plan.md` — Shelved until ingredient lists are complete. Depends on T9–T11 being done first.
 
 Key design decisions for T9–T11: Remove `tags` field from Meal model. No starter data. Cascade-rename and cascade-delete ingredients across meals (with confirmation dialog listing affected meals). Alphabetical sort. Food-inclusive icon for the 4th bottom tab.
 

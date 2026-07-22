@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/models/meal.dart';
 import '../../providers.dart';
+import '../../utils/string_extensions.dart';
 
 class MealDetailScreen extends ConsumerStatefulWidget {
   final Meal? meal;
@@ -133,7 +134,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
                     else
                       DropdownButtonFormField<String>(
                         decoration: const InputDecoration(labelText: 'Protein Source (optional)'),
-                        value: (_selectedProteinSource != null && options.proteinSources.contains(_selectedProteinSource))
+                        initialValue: (_selectedProteinSource != null && options.proteinSources.contains(_selectedProteinSource))
                             ? _selectedProteinSource
                             : null,
                         items: [
@@ -141,7 +142,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
                             value: null,
                             child: Text('None'),
                           ),
-                          ...options.proteinSources.map((protein) {
+                          ...options.proteinSources.sortedAlphabetically().map((protein) {
                             return DropdownMenuItem<String>(
                               value: protein,
                               child: Text(protein),
@@ -216,7 +217,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: availableIngredients.map((ingredient) {
+                  children: availableIngredients.sortedAlphabetically().map((ingredient) {
                     return CheckboxListTile(
                       title: Text(ingredient),
                       value: _selectedIngredients.contains(ingredient),

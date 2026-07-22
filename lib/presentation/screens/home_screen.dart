@@ -26,27 +26,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.calendar_month),
             label: 'Plan',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.restaurant_menu),
             label: 'Meals',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.kitchen),
             label: 'Ingredients',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),

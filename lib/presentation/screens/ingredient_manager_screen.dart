@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
-import '../../domain/models/ingredient_options.dart';
+import '../../utils/string_extensions.dart';
 
 class IngredientManagerScreen extends ConsumerWidget {
   const IngredientManagerScreen({super.key});
@@ -51,7 +51,7 @@ class IngredientManagerScreen extends ConsumerWidget {
     required bool isProtein,
   }) {
     // Sort items alphabetically
-    final sortedItems = List<String>.from(items)..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    final sortedItems = items.sortedAlphabetically();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

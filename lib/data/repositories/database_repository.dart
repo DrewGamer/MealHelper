@@ -79,4 +79,17 @@ class DatabaseRepository {
       'active_database_id': databaseId
     });
   }
+
+  Future<void> updateDatabaseName(String databaseId, String newName) async {
+    await _firestore.collection('databases').doc(databaseId).update({
+      'name': newName,
+    });
+  }
+
+  Stream<String> streamDatabaseName(String databaseId) {
+    return _firestore.collection('databases').doc(databaseId).snapshots().map((snapshot) {
+      if (!snapshot.exists) return 'Unknown Database';
+      return snapshot.data()?['name'] as String? ?? 'Unknown Database';
+    });
+  }
 }

@@ -1,6 +1,6 @@
 ---
 name: xp-orchestrator
-description: Use this orchestrator to manage the development lifecycle of a mobile application using extreme programming. It triggers when a new mobile app project is initiated or when new features are added to an existing backlog. It routes tasks to an agentic development team, persists plans in `.agents/plans/`, requires development on a new branch, pauses for human architectural approvals, resilient tool acquisition, release packaging on the feature branch, and post-packaging manual testing. It creates a PR and GitHub release tag, bounding when merge is confirmed.
+description: Use this orchestrator to manage the development lifecycle of a mobile application using extreme programming. It triggers when a new mobile app project is initiated or when new features are added to an existing backlog. It routes tasks to an agentic development team, persists plans in `.agents/plans/`, manages iterative development on a feature branch (with human verification to prevent branch nesting or misalignment), pauses for human architectural approvals, resilient tool acquisition, post-packaging manual testing, and final release packaging from main after PR merge, uploading the artifact to a release tag.
 ---
 
 # SKILL: Mobile App XP Lifecycle Orchestrator
@@ -19,7 +19,10 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 1. Check for the existence of an `.agents/plans/xp-state.md` plan artifact in the workspace.
 2. If it does not exist, initialize it using `assets/xp-state.template.md` as the base, ensuring the `.agents/plans` directory is created.
 3. RELOAD the `.agents/plans/xp-state.md` artifact into your context. (B4 PLAN MEMENTO)
-4. Execute `git checkout -b <new-branch-name>` to ensure development occurs on a new isolated branch. If a specific branch name isn't requested, generate one based on the feature/project.
+4. Check the current branch with `git branch --show-current`. If you are already on a feature branch, invoke the `human-checkpoint` skill to confirm if this branch aligns with the current task.
+   - If confirmed, stay on it.
+   - If not confirmed, or if you are not currently on a feature branch, list all existing branches using `git branch`. Invoke the `human-checkpoint` skill to ask the human if they want to choose one of the existing branches or if a new feature branch should be created.
+   - Execute `git checkout <chosen-branch>` or `git checkout -b <new-branch-name>` based on the human's decision.
 
 **Phase 1: Architecture & Design**
 1. Read the user's initial request or feature backlog.
@@ -38,9 +41,9 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
    - If the tool is acquired successfully, re-invoke the `xp-developer` to resume.
 3. Once the `xp-developer` finishes the feature and prepares the diff/PR, update the `.agents/plans/xp-state.md` status to indicate the task is complete.
 
-**Phase 3: Release Packaging**
-1. Invoke the `release-packager` skill to bundle the completed code into an artifact.
-2. The packager builds on the CURRENT FEATURE BRANCH to update the continuous build. It MUST NOT merge to main, create pull requests, or create new build tags (unless explicitly requested by the human).
+**Phase 3: Intermediate Release Packaging**
+1. Invoke the `release-packager` skill to bundle the completed code into an artifact for manual testing.
+2. The packager builds on the CURRENT FEATURE BRANCH to update the continuous build. It MUST NOT merge to main, create pull requests, or create new build tags.
 3. Once the packager reports success, present the final output path to the user and proceed to Phase 4.
 
 **Phase 4: Manual Testing Loop**
@@ -49,10 +52,12 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 3. If the human approves the release, proceed to Phase 5.
 
 **Phase 5: GitHub PR & Release**
-1. Use the GitHub CLI (`gh pr create`) to create a pull request for the new branch.
-2. Use the GitHub CLI (`gh release create`) or git to create a new release tag in GitHub so the branch can be merged for GitHub release.
-3. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge has been completed.
-4. Once the branch merge is confirmed and the release fully completed, halt execution.
+1. Use the GitHub CLI (`gh pr create`) to create a pull request for the feature branch.
+2. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge to main has been completed.
+3. Once the branch merge is confirmed, check out the `main` branch and pull the latest changes (`git checkout main && git pull`).
+4. Invoke the `release-packager` skill to bundle the completed code into a final release artifact from the main branch.
+5. Use the GitHub CLI (`gh release create <tag-name> <artifact-path>`) to create a new release tag and upload the final APK.
+6. Once the release is fully completed, halt execution.
 
 ## ANTI-PATTERNS
 - **Ghost Todos**: Failing to update the `.agents/plans/xp-state.md` status fields as work progresses.

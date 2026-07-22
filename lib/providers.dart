@@ -76,3 +76,7 @@ final ingredientOptionsStreamProvider = StreamProvider<IngredientOptions>((ref) 
   }
   return ref.watch(ingredientOptionsRepositoryProvider).streamIngredientOptions(dbId);
 });
+
+final databaseNameProvider = StreamProvider.family<String, String>((ref, String dbId) {
+  return ref.watch(databaseRepositoryProvider).streamDatabaseName(dbId);
+});

@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/database_repository.dart';
 import 'data/repositories/plan_repository.dart';
+import 'data/repositories/ingredient_options_repository.dart';
 import 'domain/models/meal.dart';
 import 'domain/models/weekly_plan.dart';
+import 'domain/models/ingredient_options.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -16,6 +18,10 @@ final databaseRepositoryProvider = Provider<DatabaseRepository>((ref) {
 
 final planRepositoryProvider = Provider<PlanRepository>((ref) {
   return PlanRepository();
+});
+
+final ingredientOptionsRepositoryProvider = Provider<IngredientOptionsRepository>((ref) {
+  return IngredientOptionsRepository();
 });
 
 final authStateProvider = StreamProvider<User?>((ref) {
@@ -61,4 +67,12 @@ final plansStreamProvider = StreamProvider<List<WeeklyPlan>>((ref) {
     return Stream.value([]);
   }
   return ref.watch(planRepositoryProvider).streamPlans(dbId);
+});
+
+final ingredientOptionsStreamProvider = StreamProvider<IngredientOptions>((ref) {
+  final dbId = ref.watch(activeDatabaseIdStreamProvider).value;
+  if (dbId == null) {
+    return Stream.value(IngredientOptions());
+  }
+  return ref.watch(ingredientOptionsRepositoryProvider).streamIngredientOptions(dbId);
 });

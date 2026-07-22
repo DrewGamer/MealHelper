@@ -23,9 +23,15 @@ class MealsListScreen extends ConsumerWidget {
             itemCount: meals.length,
             itemBuilder: (context, index) {
               final meal = meals[index];
+              final subtitleParts = <String>[];
+              if (meal.proteinSource != null && meal.proteinSource!.isNotEmpty) {
+                subtitleParts.add(meal.proteinSource!);
+              }
+              subtitleParts.addAll(meal.ingredients);
+
               return ListTile(
                 title: Text(meal.name),
-                subtitle: Text(meal.tags.join(', ')),
+                subtitle: subtitleParts.isNotEmpty ? Text(subtitleParts.join(', ')) : null,
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => MealDetailScreen(meal: meal)));
                 },

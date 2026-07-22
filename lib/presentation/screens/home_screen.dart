@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'meals_list_screen.dart';
 import 'weekly_plan_screen.dart';
 import 'settings_screen.dart';
+import 'ingredient_manager_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +18,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<Widget> _screens = [
     const WeeklyPlanScreen(),
     const MealsListScreen(),
+    const IngredientManagerScreen(),
     const SettingsScreen(),
   ];
 
@@ -24,23 +26,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.calendar_month),
             label: 'Plan',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.restaurant_menu),
             label: 'Meals',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
+            icon: Icon(Icons.kitchen),
+            label: 'Ingredients',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),

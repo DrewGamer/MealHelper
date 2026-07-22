@@ -37,7 +37,7 @@ class DatabaseRepository {
         'id': uid,
         'owner_id': uid,
         'collaborator_ids': [uid],
-        'name': email != null ? 'Database for $email' : 'My Database',
+        'name': 'My Personal Database',
       });
 
       // Create user profile

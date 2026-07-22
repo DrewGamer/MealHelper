@@ -37,7 +37,7 @@ class DatabaseRepository {
         'id': uid,
         'owner_id': uid,
         'collaborator_ids': [uid],
-        'name': email != null ? 'Database for $email' : 'My Database',
+        'name': 'My Personal Database',
       });
 
       // Create user profile
@@ -77,6 +77,19 @@ class DatabaseRepository {
   Future<void> switchActiveDatabase(String uid, String databaseId) async {
     await _firestore.collection('users').doc(uid).update({
       'active_database_id': databaseId
+    });
+  }
+
+  Future<void> updateDatabaseName(String databaseId, String newName) async {
+    await _firestore.collection('databases').doc(databaseId).update({
+      'name': newName,
+    });
+  }
+
+  Stream<String> streamDatabaseName(String databaseId) {
+    return _firestore.collection('databases').doc(databaseId).snapshots().map((snapshot) {
+      if (!snapshot.exists) return 'Unknown Database';
+      return snapshot.data()?['name'] as String? ?? 'Unknown Database';
     });
   }
 }

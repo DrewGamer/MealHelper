@@ -1,6 +1,6 @@
 ---
 name: xp-orchestrator
-description: Use this orchestrator to manage the development lifecycle of a mobile application using extreme programming. It triggers when a new mobile app project is initiated or when new features are added to an existing backlog. It routes tasks to an agentic development team, persists plans in `.agents/plans/`, requires development on a new branch, pauses for human architectural approvals, PR reviews, resilient tool acquisition, and post-release manual testing. It creates a PR and GitHub release tag, bounding only when the branch merge is confirmed.
+description: Use this orchestrator to manage the development lifecycle of a mobile application using extreme programming. It triggers when a new mobile app project is initiated or when new features are added to an existing backlog. It routes tasks to an agentic development team, persists plans in `.agents/plans/`, requires development on a new branch, pauses for human architectural approvals, resilient tool acquisition, release packaging on the feature branch, and post-packaging manual testing. It creates a PR and GitHub release tag, bounding when merge is confirmed.
 ---
 
 # SKILL: Mobile App XP Lifecycle Orchestrator
@@ -38,21 +38,17 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
    - If the tool is acquired successfully, re-invoke the `xp-developer` to resume.
 3. Once the `xp-developer` finishes the feature and prepares the diff/PR, update the `.agents/plans/xp-state.md` status to indicate the task is complete.
 
-**Phase 3: Code Review**
-1. Invoke the `human-checkpoint` skill to request a human review of the developer's PR/diff.
-2. If the human requests changes (REFINE), re-invoke the `xp-developer` with the human's feedback and repeat Phase 3.
-3. If approved (GO), update `.agents/plans/xp-state.md` and proceed to Phase 4.
-
-**Phase 4: Release Packaging**
+**Phase 3: Release Packaging**
 1. Invoke the `release-packager` skill to bundle the completed code into an artifact.
-2. Once the packager reports success, present the final output path to the user and proceed to Phase 5.
+2. The packager builds on the CURRENT FEATURE BRANCH to update the continuous build. It MUST NOT merge to main, create pull requests, or create new build tags (unless explicitly requested by the human).
+3. Once the packager reports success, present the final output path to the user and proceed to Phase 4.
 
-**Phase 5: Manual Testing Loop**
+**Phase 4: Manual Testing Loop**
 1. Invoke the `human-checkpoint` skill to request a human to manually test the packaged application to identify any issues or bugs.
-2. If the human finds bugs or issues, route back to Phase 2: invoke the `xp-developer` to address the specific feedback. 
-3. If the human approves the release, proceed to Phase 6.
+2. If the human finds bugs or issues, route back to Phase 2: invoke the `xp-developer` to address the specific feedback.
+3. If the human approves the release, proceed to Phase 5.
 
-**Phase 6: GitHub PR & Release**
+**Phase 5: GitHub PR & Release**
 1. Use the GitHub CLI (`gh pr create`) to create a pull request for the new branch.
 2. Use the GitHub CLI (`gh release create`) or git to create a new release tag in GitHub so the branch can be merged for GitHub release.
 3. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge has been completed.

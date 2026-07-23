@@ -69,6 +69,35 @@ final plansStreamProvider = StreamProvider<List<WeeklyPlan>>((ref) {
   return ref.watch(planRepositoryProvider).streamPlans(dbId);
 });
 
+class SelectedWeekDateNotifier extends Notifier<DateTime> {
+  @override
+  DateTime build() {
+    return WeeklyPlan.normalizeToStartOfWeek(DateTime.now());
+  }
+
+  void set(DateTime date) {
+    state = WeeklyPlan.normalizeToStartOfWeek(date);
+  }
+}
+
+final selectedWeekDateProvider = NotifierProvider<SelectedWeekDateNotifier, DateTime>(() {
+  return SelectedWeekDateNotifier();
+});
+
+final selectedWeeklyPlanProvider = Provider<AsyncValue<WeeklyPlan?>>((ref) {
+  final selectedWeek = ref.watch(selectedWeekDateProvider);
+  final plansAsync = ref.watch(plansStreamProvider);
+
+  return plansAsync.whenData((plans) {
+    for (final plan in plans) {
+      if (plan.isSameWeek(selectedWeek)) {
+        return plan;
+      }
+    }
+    return null;
+  });
+});
+
 final ingredientOptionsStreamProvider = StreamProvider<IngredientOptions>((ref) {
   final dbId = ref.watch(activeDatabaseIdStreamProvider).value;
   if (dbId == null) {

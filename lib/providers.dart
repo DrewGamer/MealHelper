@@ -5,7 +5,7 @@ import 'data/repositories/database_repository.dart';
 import 'data/repositories/plan_repository.dart';
 import 'data/repositories/ingredient_options_repository.dart';
 import 'domain/models/meal.dart';
-import 'domain/models/weekly_plan.dart';
+import 'domain/models/meal_plan.dart';
 import 'domain/models/ingredient_options.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -61,7 +61,7 @@ final mealsStreamProvider = StreamProvider<List<Meal>>((ref) {
   return ref.watch(databaseRepositoryProvider).streamMeals(dbId);
 });
 
-final plansStreamProvider = StreamProvider<List<WeeklyPlan>>((ref) {
+final plansStreamProvider = StreamProvider<List<MealPlan>>((ref) {
   final dbId = ref.watch(activeDatabaseIdStreamProvider).value;
   if (dbId == null) {
     return Stream.value([]);

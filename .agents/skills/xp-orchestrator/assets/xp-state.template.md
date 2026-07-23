@@ -32,3 +32,8 @@
 - [ ] Architecture Approved
 - [ ] PR 1 Reviewed & Approved
 - [ ] Release Package Generated
+
+## 7. Release Configuration
+**Continuous Release Tag:** continuous-build
+**Continuous Release Name:** Continuous Build
+**Build Type Override:** (leave blank for release default; set to "debug" if human requests debug build)

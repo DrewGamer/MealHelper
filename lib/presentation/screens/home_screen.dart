@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'meals_list_screen.dart';
-import 'weekly_plan_screen.dart';
+import 'plan_screen.dart';
 import 'settings_screen.dart';
 import 'ingredient_manager_screen.dart';
 
@@ -16,7 +16,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const WeeklyPlanScreen(),
+    const PlanScreen(),
     const MealsListScreen(),
     const IngredientManagerScreen(),
     const SettingsScreen(),

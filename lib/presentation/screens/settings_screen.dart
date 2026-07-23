@@ -351,6 +351,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               ),
               const Divider(),
+
+              const Divider(),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: Text('Upgrade & Link Account', style: TextStyle(fontWeight: FontWeight.bold)),

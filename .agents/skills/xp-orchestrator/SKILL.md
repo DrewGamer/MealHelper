@@ -42,13 +42,22 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 3. Once the `xp-developer` finishes the feature and prepares the diff/PR, update the `.agents/plans/xp-state.md` status to indicate the task is complete.
 
 **Phase 3: Intermediate Release Packaging**
-1. Invoke the `release-packager` skill to bundle the completed code into an artifact for manual testing.
-2. The packager builds on the CURRENT FEATURE BRANCH to update the continuous build. It MUST NOT merge to main, create pull requests, or create new build tags.
-3. Once the packager reports success, update the `continuous` release tag on GitHub to point to the current feature branch and upload the built artifact:
-   - Run `git tag -f continuous` to force update the local tag to the current commit.
-   - Run `git push -f origin continuous` to push the updated tag to GitHub.
-   - Run `gh release upload continuous <artifact-path> --clobber` to upload the newly built APK/artifact to the continuous release.
-4. Present the final output path and the continuous release link to the user and proceed to Phase 4.
+1. RELOAD `.agents/plans/xp-state.md` into your context. (B4 PLAN MEMENTO)
+2. Read the `Continuous Release Tag` and `Continuous Release Name` from Section 7 of `xp-state.md`. Read the `Build Type Override` field — if it is blank or absent, the build type is `release`; if it is set to `debug`, the build type is `debug`.
+3. Invoke the `release-packager` skill with the determined build type (default: `release`). The packager builds on the CURRENT FEATURE BRANCH. It MUST NOT merge to main, create pull requests, or create new build tags.
+4. **Verify Continuous Release on GitHub (S7 + S4):**
+   - Run `gh release view <continuous_release_tag> --json tagName,name` to verify the tag and release exist on GitHub.
+   - If the command succeeds (exit code 0), the release exists — proceed to step 5.
+   - If the command fails (tag/release not found), invoke the `human-checkpoint` skill. Present the human with the following options:
+     - **Create it:** Create the missing release with `gh release create <continuous_release_tag> --title "<continuous_release_name>" --prerelease --notes "Continuous build"`, then proceed to step 5.
+     - **Use a different name:** The human provides an alternative tag/release name. Update Section 7 of `xp-state.md` with the new values, then re-run step 4 to verify the new name.
+     - **Abort:** Halt Phase 3 entirely.
+5. **Upload Artifact to Continuous Release (MANDATORY — never skip this step):**
+   - Run `git tag -f <continuous_release_tag>` to force update the local tag to the current commit.
+   - Run `git push -f origin <continuous_release_tag>` to push the updated tag to GitHub.
+   - Run `gh release upload <continuous_release_tag> <artifact-path> --clobber` to upload the newly built APK/artifact to the continuous release.
+   - These three commands MUST all be executed. Do NOT skip the upload even if prior steps took many turns or encountered minor issues.
+6. Update `.agents/plans/xp-state.md` to record the continuous build upload checkpoint. Present the final output path and the continuous release link to the user. Proceed to Phase 4.
 
 **Phase 4: Manual Testing Loop**
 1. Invoke the `human-checkpoint` skill to request a human to manually test the packaged application to identify any issues or bugs.

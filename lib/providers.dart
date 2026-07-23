@@ -5,7 +5,7 @@ import 'data/repositories/database_repository.dart';
 import 'data/repositories/plan_repository.dart';
 import 'data/repositories/ingredient_options_repository.dart';
 import 'domain/models/meal.dart';
-import 'domain/models/weekly_plan.dart';
+import 'domain/models/meal_plan.dart';
 import 'domain/models/ingredient_options.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -61,41 +61,12 @@ final mealsStreamProvider = StreamProvider<List<Meal>>((ref) {
   return ref.watch(databaseRepositoryProvider).streamMeals(dbId);
 });
 
-final plansStreamProvider = StreamProvider<List<WeeklyPlan>>((ref) {
+final plansStreamProvider = StreamProvider<List<MealPlan>>((ref) {
   final dbId = ref.watch(activeDatabaseIdStreamProvider).value;
   if (dbId == null) {
     return Stream.value([]);
   }
   return ref.watch(planRepositoryProvider).streamPlans(dbId);
-});
-
-class SelectedWeekDateNotifier extends Notifier<DateTime> {
-  @override
-  DateTime build() {
-    return WeeklyPlan.normalizeToStartOfWeek(DateTime.now());
-  }
-
-  void set(DateTime date) {
-    state = WeeklyPlan.normalizeToStartOfWeek(date);
-  }
-}
-
-final selectedWeekDateProvider = NotifierProvider<SelectedWeekDateNotifier, DateTime>(() {
-  return SelectedWeekDateNotifier();
-});
-
-final selectedWeeklyPlanProvider = Provider<AsyncValue<WeeklyPlan?>>((ref) {
-  final selectedWeek = ref.watch(selectedWeekDateProvider);
-  final plansAsync = ref.watch(plansStreamProvider);
-
-  return plansAsync.whenData((plans) {
-    for (final plan in plans) {
-      if (plan.isSameWeek(selectedWeek)) {
-        return plan;
-      }
-    }
-    return null;
-  });
 });
 
 final ingredientOptionsStreamProvider = StreamProvider<IngredientOptions>((ref) {

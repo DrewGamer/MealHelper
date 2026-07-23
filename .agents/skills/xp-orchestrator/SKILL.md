@@ -44,7 +44,11 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 **Phase 3: Intermediate Release Packaging**
 1. Invoke the `release-packager` skill to bundle the completed code into an artifact for manual testing.
 2. The packager builds on the CURRENT FEATURE BRANCH to update the continuous build. It MUST NOT merge to main, create pull requests, or create new build tags.
-3. Once the packager reports success, present the final output path to the user and proceed to Phase 4.
+3. Once the packager reports success, update the `continuous` release tag on GitHub to point to the current feature branch and upload the built artifact:
+   - Run `git tag -f continuous` to force update the local tag to the current commit.
+   - Run `git push -f origin continuous` to push the updated tag to GitHub.
+   - Run `gh release upload continuous <artifact-path> --clobber` to upload the newly built APK/artifact to the continuous release.
+4. Present the final output path and the continuous release link to the user and proceed to Phase 4.
 
 **Phase 4: Manual Testing Loop**
 1. Invoke the `human-checkpoint` skill to request a human to manually test the packaged application to identify any issues or bugs.

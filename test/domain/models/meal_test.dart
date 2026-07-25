@@ -12,6 +12,7 @@ void main() {
         'protein_source': 'Chicken',
         'ingredients': ['Rice', 'Beans'],
         'last_used_date': Timestamp.fromDate(DateTime(2023, 1, 1)),
+        'next_upcoming_date': Timestamp.fromDate(DateTime(2023, 1, 15)),
         'created_by': 'user1',
       };
 
@@ -25,6 +26,7 @@ void main() {
       expect(meal.ingredients, ['Rice', 'Beans']);
       expect(meal.createdBy, 'user1');
       expect(meal.lastUsedDate, DateTime(2023, 1, 1));
+      expect(meal.nextUpcomingDate, DateTime(2023, 1, 15));
     });
 
     test('toMap serializes new fields correctly', () {
@@ -35,6 +37,8 @@ void main() {
         tags: ['old'],
         proteinSource: 'Chicken',
         ingredients: ['Rice'],
+        lastUsedDate: DateTime(2023, 1, 1),
+        nextUpcomingDate: DateTime(2023, 1, 15),
         createdBy: 'user1',
       );
 
@@ -43,6 +47,8 @@ void main() {
       expect(map['protein_source'], 'Chicken');
       expect(map['ingredients'], ['Rice']);
       expect(map['tags'], ['old']);
+      expect(map['last_used_date'], DateTime(2023, 1, 1));
+      expect(map['next_upcoming_date'], DateTime(2023, 1, 15));
     });
 
     test('copyWith updates new fields', () {
@@ -56,11 +62,13 @@ void main() {
       final updated = meal.copyWith(
         proteinSource: 'Beef',
         ingredients: ['Tomato'],
+        nextUpcomingDate: DateTime(2023, 1, 15),
       );
 
       expect(updated.proteinSource, 'Beef');
       expect(updated.ingredients, ['Tomato']);
       expect(updated.name, 'M');
+      expect(updated.nextUpcomingDate, DateTime(2023, 1, 15));
     });
   });
 }

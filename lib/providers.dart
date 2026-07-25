@@ -7,6 +7,8 @@ import 'data/repositories/ingredient_options_repository.dart';
 import 'domain/models/meal.dart';
 import 'domain/models/meal_plan.dart';
 import 'domain/models/ingredient_options.dart';
+import 'application/services/meal_sync_service.dart';
+import 'application/services/meal_selection_engine.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -22,6 +24,18 @@ final planRepositoryProvider = Provider<PlanRepository>((ref) {
 
 final ingredientOptionsRepositoryProvider = Provider<IngredientOptionsRepository>((ref) {
   return IngredientOptionsRepository();
+});
+
+final mealSyncServiceProvider = Provider<MealSyncService>((ref) {
+  final planRepo = ref.watch(planRepositoryProvider);
+  final dbRepo = ref.watch(databaseRepositoryProvider);
+  return MealSyncService(planRepo, dbRepo);
+});
+
+final mealSelectionEngineProvider = Provider<MealSelectionEngine>((ref) {
+  // Configured with RecencyStrategy by default.
+  // We can pass options later or recreate it based on parameters.
+  return MealSelectionEngine(strategies: [RecencyStrategy()]);
 });
 
 final authStateProvider = StreamProvider<User?>((ref) {

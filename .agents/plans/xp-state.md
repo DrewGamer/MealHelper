@@ -1,12 +1,12 @@
 # Mobile App XP State (B4 Plan Memento)
 
 ## 1. Project Context
-**Project Name:** Retrieve Past or Future Meal Plans in Plan Tab
-**Current Stage:** XP Development Loop
+**Project Name:** Smart Auto-Populate for Meal Plans
+**Current Stage:** Phase 2: XP Development Loop
 **Primary Tech Stack:** Flutter, Dart, Riverpod, Firebase Firestore
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Refactor meal plan logic to use a flexible start date chosen by the user, remove the global week start day, remove scrolling week widgets, and handle overlap conflicts by pulling overlapping days into the new plan.
+**Current Objective:** Introduce a "Smart Auto-Populate" feature for meal plans allowing users to randomly assign meals to empty days, guided by extensible filter/sort toggles. Initially, prioritize meals not eaten recently and not scheduled for the near future.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
@@ -14,10 +14,10 @@
 
 ## 3. Architecture & Tech Stack
 **Approved Architecture & Enhancements:**
-1. **Flexible Meal Plan Model**: Abandon the fixed global "week start day". A `MealPlan` is defined strictly by its `startDate` (chosen at creation) and an `endDate` (or fixed duration like 7 days). Remove `weekStartDayProvider` and related global settings.
-2. **UI/UX Paradigm Shift (Plan Tab)**: Remove the `ScrollingWeekWidget`. Replace the main Plan Tab view with a vertically scrolling list of `MealPlan` cards, sorted chronologically. Creating a new plan will prompt the user to select a specific `startDate` via a date picker.
-3. **Overlap Detection & Resolution Strategy**: Before saving a new `MealPlan`, the system queries existing plans for date intersections. If an overlap is detected, the UI intercepts the creation with a warning dialog.
-4. **Data Migration / Pull Mutation**: If the user agrees to the overlap warning, the system "Pulls" existing meals on overlapping dates to the new `MealPlan`, and truncates/deletes the older `MealPlan`.
+1. **`Meal` Document Updates**: Denormalize usage data onto the `Meal` document (`lastUsedDate` and `nextUpcomingDate`).
+2. **`MealSyncService`**: Intercept modifications to `MealPlan` items. On addition, pessimistically update meal usage timestamps. On removal/deletion, query active plans and recalculate true dates to write back.
+3. **`MealSelectionEngine`**: A Strategy Pipeline accepting empty slots, available meals, and active `SelectionStrategy` toggles. Initial toggle is `RecencyStrategy` penalizing recent/upcoming meals. Uses a random weighted selector to pick top-scoring meals.
+4. **UI Updates**: `AutoPopulateConfigBottomSheet` for toggles and "Auto-Fill" action button in `MealPlanDetailsView`.
 
 **Dependencies / Frameworks:**
 - Flutter (Material 3)
@@ -28,19 +28,15 @@
 ## 4. Work Backlog (B7 Todo Commands)
 | ID | Title | Status | Assigned Persona | Dependencies |
 |---|---|---|---|---|
-| T1 | Data Model & State Cleanup | done | xp-developer | - |
-| T2 | Overlap Detection Logic | done | xp-developer | T1 |
-| T3 | Conflict Resolution Implementation | done | xp-developer | T2 |
-| T4 | UI Refactor - Plan Tab | done | xp-developer | T3 |
-| T5 | UI - Plan Creation Flow | done | xp-developer | T4 |
-| T6 | Allow End Date Selection | done | xp-developer | - |
-| T7 | Allow Overlapping Meal Plans | done | xp-developer | T6 |
-| T8 | Indicate Used Days in Date Picker | done | xp-developer | T7 |
-| T9 | Fix Overlapped Meals Syncing | done | xp-developer | T8 |
-| T10 | Split Overlap Options (Truncate vs Delete) | done | xp-developer | T9 |
+| T1 | Data Model Updates (lastUsedDate, nextUpcomingDate) | done | xp-developer | - |
+| T2 | MealSyncService - Addition Handling | done | xp-developer | T1 |
+| T3 | MealSyncService - Removal/Deletion Recalculation | done | xp-developer | T2 |
+| T4 | MealSelectionEngine & RecencyStrategy | done | xp-developer | T1 |
+| T5 | UI - AutoPopulateConfigBottomSheet | done | xp-developer | T4 |
+| T6 | UI - MealPlanDetailsView Auto-Fill Integration | done | xp-developer | T5 |
 
 ## 5. Sub-Agent Coordination
-Configurable week-start day logic is being removed in favor of a flexible start-date per meal plan. Overlap detection and conflict resolution logic being implemented.
+Implementing Smart Auto-Populate feature with Strategy Pattern for selection and recalculation logic for meal usage dates.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved

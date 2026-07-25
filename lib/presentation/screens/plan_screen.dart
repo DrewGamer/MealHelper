@@ -1,9 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
-import '../../providers.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/meal.dart';
+import '../../application/services/meal_selection_engine.dart';
+import '../../providers.dart';
+
+class AutoPopulateConfigBottomSheet extends StatefulWidget {
+  const AutoPopulateConfigBottomSheet({super.key});
+
+  @override
+  State<AutoPopulateConfigBottomSheet> createState() => _AutoPopulateConfigBottomSheetState();
+}
+
+class _AutoPopulateConfigBottomSheetState extends State<AutoPopulateConfigBottomSheet> {
+  bool _useRecency = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Auto-Fill Options', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          SwitchListTile(
+            title: const Text('Penalize Recent Meals'),
+            subtitle: const Text('Avoid meals eaten recently or scheduled soon.'),
+            value: _useRecency,
+            onChanged: (val) => setState(() => _useRecency = val),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, {'useRecency': _useRecency}),
+            child: const Text('Auto-Fill Now'),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
 
 class PlanScreen extends ConsumerStatefulWidget {
   const PlanScreen({super.key});
@@ -176,7 +213,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
       mealIdsByDay: initialMeals,
     );
     
-    final repo = ref.read(planRepositoryProvider);
+    final repo = ref.read(mealSyncServiceProvider);
     for (final p in plansToDelete) {
       await repo.deletePlan(dbId, p.id);
     }
@@ -291,7 +328,7 @@ class MealPlanDetailScreen extends ConsumerWidget {
         newMealIds.remove(pTargetOffset);
       }
       final updatedPlan = p.copyWith(mealIdsByDay: newMealIds);
-      await ref.read(planRepositoryProvider).updatePlan(dbId, updatedPlan);
+      await ref.read(mealSyncServiceProvider).updatePlan(dbId, updatedPlan);
     }
   }
 
@@ -305,6 +342,53 @@ class MealPlanDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(MealPlan.formatDateRange(plan.startDate, plan.endDate)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome),
+            onPressed: () async {
+              final config = await showModalBottomSheet<Map<String, dynamic>>(
+                context: context,
+                builder: (context) => const AutoPopulateConfigBottomSheet(),
+              );
+              if (config == null) return;
+              
+              final allMeals = ref.read(mealsStreamProvider).value ?? [];
+              final currentPlans = ref.read(plansStreamProvider).value ?? [];
+              final currentPlan = currentPlans.firstWhere((p) => p.id == plan.id, orElse: () => plan);
+              
+              final duration = currentPlan.endDate.difference(currentPlan.startDate).inDays + 1;
+              List<DateTime> emptySlots = [];
+              for (int i = 0; i < duration; i++) {
+                if (currentPlan.mealIdsByDay[i] == null) {
+                  emptySlots.add(currentPlan.startDate.add(Duration(days: i)));
+                }
+              }
+              
+              if (emptySlots.isEmpty) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No empty slots to fill!')));
+                }
+                return;
+              }
+              
+              final engine = config['useRecency'] == true 
+                  ? ref.read(mealSelectionEngineProvider) 
+                  : MealSelectionEngine(strategies: []); // Empty strategies if unchecked
+                  
+              final assignments = engine.populateSlots(emptySlots, allMeals);
+              
+              final newMealIds = Map<int, String>.from(currentPlan.mealIdsByDay);
+              assignments.forEach((date, meal) {
+                final offset = date.difference(currentPlan.startDate).inDays;
+                newMealIds[offset] = meal.id;
+              });
+              
+              final updatedPlan = currentPlan.copyWith(mealIdsByDay: newMealIds);
+              final dbId = ref.read(activeDatabaseIdStreamProvider).value;
+              if (dbId != null) {
+                await ref.read(mealSyncServiceProvider).updatePlan(dbId, updatedPlan);
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () async {
@@ -322,7 +406,7 @@ class MealPlanDetailScreen extends ConsumerWidget {
               if (confirm == true) {
                 final dbId = ref.read(activeDatabaseIdStreamProvider).value;
                 if (dbId != null) {
-                  await ref.read(planRepositoryProvider).deletePlan(dbId, plan.id);
+                  await ref.read(mealSyncServiceProvider).deletePlan(dbId, plan.id);
                   if (context.mounted) {
                     Navigator.pop(context);
                   }

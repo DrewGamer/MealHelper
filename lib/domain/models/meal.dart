@@ -7,6 +7,7 @@ class Meal {
   final String? proteinSource;
   final List<String> ingredients;
   final DateTime? lastUsedDate;
+  final DateTime? nextUpcomingDate;
   final String createdBy;
 
   Meal({
@@ -17,6 +18,7 @@ class Meal {
     this.proteinSource,
     this.ingredients = const [],
     this.lastUsedDate,
+    this.nextUpcomingDate,
     required this.createdBy,
   });
 
@@ -29,6 +31,7 @@ class Meal {
       proteinSource: data['protein_source'],
       ingredients: List<String>.from(data['ingredients'] ?? []),
       lastUsedDate: data['last_used_date']?.toDate(),
+      nextUpcomingDate: data['next_upcoming_date']?.toDate(),
       createdBy: data['created_by'] ?? '',
     );
   }
@@ -41,6 +44,7 @@ class Meal {
       'protein_source': proteinSource,
       'ingredients': ingredients,
       'last_used_date': lastUsedDate,
+      'next_upcoming_date': nextUpcomingDate,
       'created_by': createdBy,
     };
   }
@@ -53,6 +57,7 @@ class Meal {
     String? proteinSource,
     List<String>? ingredients,
     DateTime? lastUsedDate,
+    DateTime? nextUpcomingDate,
     String? createdBy,
   }) {
     return Meal(
@@ -63,6 +68,7 @@ class Meal {
       proteinSource: proteinSource ?? this.proteinSource,
       ingredients: ingredients ?? this.ingredients,
       lastUsedDate: lastUsedDate ?? this.lastUsedDate,
+      nextUpcomingDate: nextUpcomingDate ?? this.nextUpcomingDate,
       createdBy: createdBy ?? this.createdBy,
     );
   }

@@ -25,4 +25,9 @@ class PlanRepository {
       return snapshot.docs.map((doc) => MealPlan.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
     });
   }
+
+  Future<List<MealPlan>> getPlans(String databaseId) async {
+    final snapshot = await _plansRef(databaseId).get();
+    return snapshot.docs.map((doc) => MealPlan.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+  }
 }

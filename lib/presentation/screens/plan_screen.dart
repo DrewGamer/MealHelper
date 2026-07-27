@@ -15,6 +15,7 @@ class AutoPopulateConfigBottomSheet extends StatefulWidget {
 
 class _AutoPopulateConfigBottomSheetState extends State<AutoPopulateConfigBottomSheet> {
   bool _useRecency = true;
+  int _consecutiveDays = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +31,27 @@ class _AutoPopulateConfigBottomSheetState extends State<AutoPopulateConfigBottom
             value: _useRecency,
             onChanged: (val) => setState(() => _useRecency = val),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Consecutive Days per Meal:', style: TextStyle(fontSize: 16)),
+                DropdownButton<int>(
+                  value: _consecutiveDays,
+                  items: List.generate(7, (index) => index + 1)
+                      .map((val) => DropdownMenuItem(value: val, child: Text(val.toString())))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _consecutiveDays = val);
+                  },
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, {'useRecency': _useRecency}),
+            onPressed: () => Navigator.pop(context, {'useRecency': _useRecency, 'consecutiveDays': _consecutiveDays}),
             child: const Text('Auto-Fill Now'),
           ),
           const SizedBox(height: 16),
@@ -370,11 +389,64 @@ class MealPlanDetailScreen extends ConsumerWidget {
                 return;
               }
               
+              int consecutiveDays = config['consecutiveDays'] ?? 1;
+              bool fillPartial = true;
+
+              emptySlots.sort();
+              List<List<DateTime>> contiguousSequences = [];
+              List<DateTime> currentSeq = [emptySlots.first];
+
+              for (int i = 1; i < emptySlots.length; i++) {
+                final prev = emptySlots[i - 1];
+                final curr = emptySlots[i];
+                final prevDay = DateTime(prev.year, prev.month, prev.day);
+                final currDay = DateTime(curr.year, curr.month, curr.day);
+
+                if (currDay.difference(prevDay).inDays == 1) {
+                  currentSeq.add(curr);
+                } else {
+                  contiguousSequences.add(currentSeq);
+                  currentSeq = [curr];
+                }
+              }
+              contiguousSequences.add(currentSeq);
+
+              bool hasPartialFills = false;
+              for (var seq in contiguousSequences) {
+                if (seq.length % consecutiveDays > 0) {
+                  hasPartialFills = true;
+                  break;
+                }
+              }
+
+              if (hasPartialFills) {
+                if (!context.mounted) return;
+                final result = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Partial Meal Placement'),
+                    content: const Text('Some meals would overflow the available empty days (e.g., at the end of the week). Do you want to fill what it can, or leave the remaining days empty?'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Leave Empty')),
+                      ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Fill What It Can')),
+                    ],
+                  ),
+                );
+                
+                if (result == null) return;
+                fillPartial = result;
+              }
+
               final engine = config['useRecency'] == true 
                   ? ref.read(mealSelectionEngineProvider) 
                   : MealSelectionEngine(strategies: []); // Empty strategies if unchecked
                   
-              final assignments = engine.populateSlots(emptySlots, allMeals);
+              final assignments = engine.populateSlots(
+                emptySlots, 
+                allMeals,
+                consecutiveDays: consecutiveDays,
+                fillPartial: fillPartial,
+              );
               
               final newMealIds = Map<int, String>.from(currentPlan.mealIdsByDay);
               assignments.forEach((date, meal) {

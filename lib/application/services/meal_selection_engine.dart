@@ -46,15 +46,59 @@ class MealSelectionEngine {
 
   /// Accepts a list of empty slot target dates and available meals.
   /// Returns a map of slot date to assigned Meal.
-  Map<DateTime, Meal> populateSlots(List<DateTime> emptySlots, List<Meal> availableMeals) {
+  Map<DateTime, Meal> populateSlots(
+    List<DateTime> emptySlots,
+    List<Meal> availableMeals, {
+    int consecutiveDays = 1,
+    bool fillPartial = true,
+  }) {
     Map<DateTime, Meal> assignments = {};
     
+    if (emptySlots.isEmpty || availableMeals.isEmpty) return assignments;
+
     final sortedSlots = List<DateTime>.from(emptySlots)..sort();
     List<Meal> currentMeals = List.from(availableMeals);
 
-    for (var slotDate in sortedSlots) {
+    // Break into contiguous sub-lists
+    List<List<DateTime>> contiguousSubLists = [];
+    List<DateTime> currentSubList = [sortedSlots.first];
+
+    for (int i = 1; i < sortedSlots.length; i++) {
+      final prevDate = sortedSlots[i - 1];
+      final currDate = sortedSlots[i];
+
+      // Use start of day for accurate 1-day difference calculation
+      final prevDay = DateTime(prevDate.year, prevDate.month, prevDate.day);
+      final currDay = DateTime(currDate.year, currDate.month, currDate.day);
+      
+      if (currDay.difference(prevDay).inDays == 1) {
+        currentSubList.add(currDate);
+      } else {
+        contiguousSubLists.add(currentSubList);
+        currentSubList = [currDate];
+      }
+    }
+    contiguousSubLists.add(currentSubList);
+
+    // Split each sub-list into chunks of size up to consecutiveDays
+    List<List<DateTime>> chunks = [];
+    for (var subList in contiguousSubLists) {
+      for (int i = 0; i < subList.length; i += consecutiveDays) {
+        int end = (i + consecutiveDays < subList.length)
+            ? i + consecutiveDays
+            : subList.length;
+        chunks.add(subList.sublist(i, end));
+      }
+    }
+
+    for (var chunk in chunks) {
       if (currentMeals.isEmpty) break;
 
+      if (chunk.length < consecutiveDays && !fillPartial) {
+        continue;
+      }
+
+      final targetDate = chunk.first;
       Map<String, double> combinedScores = {};
       
       // Initialize with base 0 for addition
@@ -63,7 +107,7 @@ class MealSelectionEngine {
       }
 
       for (var strategy in strategies) {
-        final scores = strategy.scoreMeals(currentMeals, slotDate);
+        final scores = strategy.scoreMeals(currentMeals, targetDate);
         for (var mealId in scores.keys) {
           combinedScores[mealId] = (combinedScores[mealId] ?? 0.0) + scores[mealId]!;
         }
@@ -71,10 +115,13 @@ class MealSelectionEngine {
 
       final selectedMeal = _weightedRandomSelection(currentMeals, combinedScores);
       if (selectedMeal != null) {
-        assignments[slotDate] = selectedMeal;
+        for (var slotDate in chunk) {
+          assignments[slotDate] = selectedMeal;
+        }
         
-        // Optimistically update lastUsedDate so subsequent days penalize using this meal repeatedly
-        final updatedMeal = selectedMeal.copyWith(lastUsedDate: slotDate);
+        // Optimistically update lastUsedDate so subsequent iterations penalize correctly
+        final lastDay = chunk.last;
+        final updatedMeal = selectedMeal.copyWith(lastUsedDate: lastDay);
         final index = currentMeals.indexWhere((m) => m.id == selectedMeal.id);
         if (index != -1) {
           currentMeals[index] = updatedMeal;

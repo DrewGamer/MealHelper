@@ -6,7 +6,7 @@
 **Primary Tech Stack:** Flutter, Dart, Riverpod, Firebase Firestore
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Introduce a "Smart Auto-Populate" feature for meal plans allowing users to randomly assign meals to empty days, guided by extensible filter/sort toggles. Initially, prioritize meals not eaten recently and not scheduled for the near future.
+**Current Objective:** Enhance "Smart Auto-Populate" to allow selecting how many consecutive days a meal is used. Add a dropdown selector and handle end-of-week overflow with user prompts for partial filling vs leaving empty.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
@@ -16,8 +16,8 @@
 **Approved Architecture & Enhancements:**
 1. **`Meal` Document Updates**: Denormalize usage data onto the `Meal` document (`lastUsedDate` and `nextUpcomingDate`).
 2. **`MealSyncService`**: Intercept modifications to `MealPlan` items. On addition, pessimistically update meal usage timestamps. On removal/deletion, query active plans and recalculate true dates to write back.
-3. **`MealSelectionEngine`**: A Strategy Pipeline accepting empty slots, available meals, and active `SelectionStrategy` toggles. Initial toggle is `RecencyStrategy` penalizing recent/upcoming meals. Uses a random weighted selector to pick top-scoring meals.
-4. **UI Updates**: `AutoPopulateConfigBottomSheet` for toggles and "Auto-Fill" action button in `MealPlanDetailsView`.
+3. **`MealSelectionEngine`**: A Strategy Pipeline accepting empty slots, available meals, and active `SelectionStrategy` toggles. Initial toggle is `RecencyStrategy` penalizing recent/upcoming meals. Uses a random weighted selector to pick top-scoring meals. Now supports chunking contiguous days and `consecutiveDays` assignment.
+4. **UI Updates**: `AutoPopulateConfigBottomSheet` for toggles and "Auto-Fill" action button in `MealPlanDetailsView`. Added `consecutiveDays` dropdown and partial-fill overflow `AlertDialog` in PlanScreen.
 
 **Dependencies / Frameworks:**
 - Flutter (Material 3)
@@ -34,6 +34,9 @@
 | T4 | MealSelectionEngine & RecencyStrategy | done | xp-developer | T1 |
 | T5 | UI - AutoPopulateConfigBottomSheet | done | xp-developer | T4 |
 | T6 | UI - MealPlanDetailsView Auto-Fill Integration | done | xp-developer | T5 |
+| T7 | Core - Update MealSelectionEngine for chunking & consecutive days | done | xp-developer | - |
+| T8 | UI - Add dropdown to AutoPopulateConfigBottomSheet | done | xp-developer | T7 |
+| T9 | UI - Overflow Dialog logic in PlanScreen | done | xp-developer | T8 |
 
 ## 5. Sub-Agent Coordination
 Implementing Smart Auto-Populate feature with Strategy Pattern for selection and recalculation logic for meal usage dates.
@@ -43,6 +46,8 @@ Implementing Smart Auto-Populate feature with Strategy Pattern for selection and
 - [x] XP Development Loop Completed & Analyzed Clean
 - [ ] PR 1 Reviewed & Approved
 - [x] Release Package Generated (Continuous Build APK uploaded to tag continuous-build)
+- [x] Architecture Approved for Consecutive Days Feature
+- [x] Consecutive Days Feature Developed
 
 ## 7. Release Configuration
 **Continuous Release Tag:** continuous-build

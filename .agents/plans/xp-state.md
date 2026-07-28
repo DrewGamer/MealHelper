@@ -51,6 +51,8 @@ Implementing Smart Auto-Populate feature with Strategy Pattern for selection and
 - [x] Release Package Generated (Continuous Build APK uploaded to tag continuous-build)
 - [x] Architecture Approved for Consecutive Days Feature
 - [x] Consecutive Days Feature Developed
+- [x] Vary Protein Source Feature Developed
+- [x] Continuous Build for Vary Protein Source Uploaded
 
 ## 7. Release Configuration
 **Continuous Release Tag:** continuous-build

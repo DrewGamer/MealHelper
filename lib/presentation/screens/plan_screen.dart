@@ -15,6 +15,7 @@ class AutoPopulateConfigBottomSheet extends StatefulWidget {
 
 class _AutoPopulateConfigBottomSheetState extends State<AutoPopulateConfigBottomSheet> {
   bool _useRecency = true;
+  bool _useVaryProtein = true;
   int _consecutiveDays = 1;
 
   @override
@@ -30,6 +31,12 @@ class _AutoPopulateConfigBottomSheetState extends State<AutoPopulateConfigBottom
             subtitle: const Text('Avoid meals eaten recently or scheduled soon.'),
             value: _useRecency,
             onChanged: (val) => setState(() => _useRecency = val),
+          ),
+          SwitchListTile(
+            title: const Text('Vary Protein Source'),
+            subtitle: const Text('Avoid meals sharing the same protein source as recent meals.'),
+            value: _useVaryProtein,
+            onChanged: (val) => setState(() => _useVaryProtein = val),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -51,7 +58,11 @@ class _AutoPopulateConfigBottomSheetState extends State<AutoPopulateConfigBottom
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, {'useRecency': _useRecency, 'consecutiveDays': _consecutiveDays}),
+            onPressed: () => Navigator.pop(context, {
+              'useRecency': _useRecency, 
+              'useVaryProtein': _useVaryProtein,
+              'consecutiveDays': _consecutiveDays
+            }),
             child: const Text('Auto-Fill Now'),
           ),
           const SizedBox(height: 16),
@@ -437,10 +448,12 @@ class MealPlanDetailScreen extends ConsumerWidget {
                 fillPartial = result;
               }
 
-              final engine = config['useRecency'] == true 
-                  ? ref.read(mealSelectionEngineProvider) 
-                  : MealSelectionEngine(strategies: []); // Empty strategies if unchecked
-                  
+              final engineConfig = EngineConfig(
+                useRecency: config['useRecency'] == true,
+                useVaryProtein: config['useVaryProtein'] == true,
+              );
+              final engine = ref.read(mealSelectionEngineProvider(engineConfig));
+              
               final assignments = engine.populateSlots(
                 emptySlots, 
                 allMeals,

@@ -6,7 +6,7 @@
 **Primary Tech Stack:** Flutter, Dart, Riverpod, Firebase Firestore
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Enhance "Smart Auto-Populate" to allow selecting how many consecutive days a meal is used. Add a dropdown selector and handle end-of-week overflow with user prompts for partial filling vs leaving empty.
+**Current Objective:** Add a new "Vary Protein Source" toggle for auto-filling meals. Ensure the `MealSelectionEngine` can handle multiple active strategies concurrently (e.g., Recency and Protein Variety) to balance their constraints.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
@@ -16,8 +16,8 @@
 **Approved Architecture & Enhancements:**
 1. **`Meal` Document Updates**: Denormalize usage data onto the `Meal` document (`lastUsedDate` and `nextUpcomingDate`).
 2. **`MealSyncService`**: Intercept modifications to `MealPlan` items. On addition, pessimistically update meal usage timestamps. On removal/deletion, query active plans and recalculate true dates to write back.
-3. **`MealSelectionEngine`**: A Strategy Pipeline accepting empty slots, available meals, and active `SelectionStrategy` toggles. Initial toggle is `RecencyStrategy` penalizing recent/upcoming meals. Uses a random weighted selector to pick top-scoring meals. Now supports chunking contiguous days and `consecutiveDays` assignment.
-4. **UI Updates**: `AutoPopulateConfigBottomSheet` for toggles and "Auto-Fill" action button in `MealPlanDetailsView`. Added `consecutiveDays` dropdown and partial-fill overflow `AlertDialog` in PlanScreen.
+3. **`MealSelectionEngine`**: A Strategy Pipeline accepting empty slots, available meals, and active `SelectionStrategy` toggles. Currently supports `RecencyStrategy`. We will add `VaryProteinStrategy` which penalizes meals sharing a protein source with recently assigned meals.
+4. **UI Updates**: `AutoPopulateConfigBottomSheet` will include multiple toggles (Recency, Vary Protein).
 
 **Dependencies / Frameworks:**
 - Flutter (Material 3)
@@ -37,6 +37,9 @@
 | T7 | Core - Update MealSelectionEngine for chunking & consecutive days | done | xp-developer | - |
 | T8 | UI - Add dropdown to AutoPopulateConfigBottomSheet | done | xp-developer | T7 |
 | T9 | UI - Overflow Dialog logic in PlanScreen | done | xp-developer | T8 |
+| T10 | Core - Create VaryProteinStrategy | done | xp-developer | - |
+| T11 | UI - Add Vary Protein toggle to AutoPopulateConfigBottomSheet | done | xp-developer | T10 |
+| T12 | State - Update providers to pass multiple active strategies to Engine | done | xp-developer | T11 |
 
 ## 5. Sub-Agent Coordination
 Implementing Smart Auto-Populate feature with Strategy Pattern for selection and recalculation logic for meal usage dates.
@@ -48,6 +51,8 @@ Implementing Smart Auto-Populate feature with Strategy Pattern for selection and
 - [x] Release Package Generated (Continuous Build APK uploaded to tag continuous-build)
 - [x] Architecture Approved for Consecutive Days Feature
 - [x] Consecutive Days Feature Developed
+- [x] Vary Protein Source Feature Developed
+- [x] Continuous Build for Vary Protein Source Uploaded
 
 ## 7. Release Configuration
 **Continuous Release Tag:** continuous-build

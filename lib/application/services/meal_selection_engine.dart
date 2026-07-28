@@ -38,6 +38,62 @@ class RecencyStrategy implements SelectionStrategy {
   }
 }
 
+class VaryProteinStrategy implements SelectionStrategy {
+  final int windowDays;
+  final double penaltyBase;
+
+  VaryProteinStrategy({this.windowDays = 3, this.penaltyBase = 50.0});
+
+  @override
+  Map<String, double> scoreMeals(List<Meal> meals, DateTime targetDate) {
+    Set<String> recentlyUsedProteins = {};
+
+    final normalizedTarget = DateTime(targetDate.year, targetDate.month, targetDate.day);
+
+    for (var meal in meals) {
+      if (meal.proteinSource != null && meal.proteinSource!.trim().isNotEmpty) {
+        bool isRecent = false;
+        
+        if (meal.lastUsedDate != null) {
+          final normalizedLastUsed = DateTime(meal.lastUsedDate!.year, meal.lastUsedDate!.month, meal.lastUsedDate!.day);
+          final daysSince = normalizedTarget.difference(normalizedLastUsed).inDays.abs();
+          if (daysSince <= windowDays) {
+            isRecent = true;
+          }
+        }
+        
+        if (!isRecent && meal.nextUpcomingDate != null) {
+          final normalizedNextUpcoming = DateTime(meal.nextUpcomingDate!.year, meal.nextUpcomingDate!.month, meal.nextUpcomingDate!.day);
+          final daysUntil = normalizedNextUpcoming.difference(normalizedTarget).inDays.abs();
+          if (daysUntil <= windowDays) {
+            isRecent = true;
+          }
+        }
+
+        if (isRecent) {
+          recentlyUsedProteins.add(meal.proteinSource!.trim().toLowerCase());
+        }
+      }
+    }
+
+    Map<String, double> scores = {};
+    for (var meal in meals) {
+      double score = 100.0;
+      
+      if (meal.proteinSource != null && meal.proteinSource!.trim().isNotEmpty) {
+        final protein = meal.proteinSource!.trim().toLowerCase();
+        if (recentlyUsedProteins.contains(protein)) {
+          score -= penaltyBase;
+        }
+      }
+      
+      scores[meal.id] = max(1.0, score);
+    }
+    
+    return scores;
+  }
+}
+
 class MealSelectionEngine {
   final List<SelectionStrategy> strategies;
   final Random _random;

@@ -37,9 +37,9 @@
 | T7 | Core - Update MealSelectionEngine for chunking & consecutive days | done | xp-developer | - |
 | T8 | UI - Add dropdown to AutoPopulateConfigBottomSheet | done | xp-developer | T7 |
 | T9 | UI - Overflow Dialog logic in PlanScreen | done | xp-developer | T8 |
-| T10 | Core - Create VaryProteinStrategy | todo | xp-developer | - |
-| T11 | UI - Add Vary Protein toggle to AutoPopulateConfigBottomSheet | todo | xp-developer | T10 |
-| T12 | State - Update providers to pass multiple active strategies to Engine | todo | xp-developer | T11 |
+| T10 | Core - Create VaryProteinStrategy | done | xp-developer | - |
+| T11 | UI - Add Vary Protein toggle to AutoPopulateConfigBottomSheet | done | xp-developer | T10 |
+| T12 | State - Update providers to pass multiple active strategies to Engine | done | xp-developer | T11 |
 
 ## 5. Sub-Agent Coordination
 Implementing Smart Auto-Populate feature with Strategy Pattern for selection and recalculation logic for meal usage dates.

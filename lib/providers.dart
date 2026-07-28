@@ -32,10 +32,30 @@ final mealSyncServiceProvider = Provider<MealSyncService>((ref) {
   return MealSyncService(planRepo, dbRepo);
 });
 
-final mealSelectionEngineProvider = Provider<MealSelectionEngine>((ref) {
-  // Configured with RecencyStrategy by default.
-  // We can pass options later or recreate it based on parameters.
-  return MealSelectionEngine(strategies: [RecencyStrategy()]);
+class EngineConfig {
+  final bool useRecency;
+  final bool useVaryProtein;
+  
+  EngineConfig({this.useRecency = true, this.useVaryProtein = true});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EngineConfig &&
+          runtimeType == other.runtimeType &&
+          useRecency == other.useRecency &&
+          useVaryProtein == other.useVaryProtein;
+
+  @override
+  int get hashCode => useRecency.hashCode ^ useVaryProtein.hashCode;
+}
+
+final mealSelectionEngineProvider = Provider.family<MealSelectionEngine, EngineConfig>((ref, config) {
+  List<SelectionStrategy> activeStrategies = [];
+  if (config.useRecency) activeStrategies.add(RecencyStrategy());
+  if (config.useVaryProtein) activeStrategies.add(VaryProteinStrategy());
+  
+  return MealSelectionEngine(strategies: activeStrategies);
 });
 
 final authStateProvider = StreamProvider<User?>((ref) {

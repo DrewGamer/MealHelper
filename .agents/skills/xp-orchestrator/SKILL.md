@@ -69,10 +69,26 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 2. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge to main has been completed.
 3. Once the branch merge is confirmed, check out the `main` branch and pull the latest changes (`git checkout main && git pull`).
 4. Invoke the `release-packager` skill to bundle the completed code into a final release artifact from the main branch.
-5. Use the GitHub CLI (`gh release create <tag-name> <artifact-path>`) to create a new release tag and upload the final APK.
-6. Once the release is fully completed, halt execution.
+5. **Determine Next Semver Tag (S7 + S4):**
+   - Run `git tag -l "v*" --sort=-v:refname` to list all existing version tags, sorted newest first.
+   - Parse the output to find the latest tag matching the semver pattern: `v<MAJOR>.<MINOR>.<PATCH>[-<prerelease>]`.
+   - Suggest the next version tag using these rules:
+     - If no valid semver tags exist, suggest `v0.1.0-beta`.
+     - If the latest tag has a pre-release label (e.g. `v0.9.0-beta`), suggest incrementing MINOR (e.g. `v0.10.0-beta`).
+     - If the latest tag is stable (no pre-release label), suggest incrementing MINOR (e.g. `v1.0.0` -> `v1.1.0`).
+   - Validate the proposed tag against the semver regex: `^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$`. If validation fails, regenerate (max 3 attempts).
+6. **Tag Approval Gate (B10):**
+   - Invoke the `human-checkpoint` skill. Present the proposed tag, the latest existing tag, and the rationale (minor bump / patch bump / graduation from pre-release). Offer these options:
+     - **Approve**: Use the proposed tag as-is.
+     - **Override**: The human provides their own tag (e.g. to do a major bump, patch bump, or drop the pre-release label to graduate to stable).
+   - If the human provides a custom tag, validate it against the semver regex. If it fails, inform the human the tag does not follow semver conventions and ask them to revise.
+7. **Create Release (S7):**
+   - Run `gh release create <approved-tag> <artifact-path> --title "<approved-tag>" --notes "Release <approved-tag>"` to create the release with the approved semver tag.
+   - Verify the release was created successfully by checking the exit code.
+8. Update `.agents/plans/xp-state.md` to record the final release tag. Once the release is fully completed, halt execution.
 
 ## ANTI-PATTERNS
 - **Ghost Todos**: Failing to update the `.agents/plans/xp-state.md` status fields as work progresses.
 - **Skipping Gates**: Proceeding to Development without Architecture approval, to Release without PR approval, or halting before branch merge confirmation.
 - **Unbounded Loops**: Failing to pass the exact failure feedback to the personas when a human checkpoint requests changes.
+- **Ad-Hoc Tags**: Creating release tags without reading existing tags from git or validating against the semver regex. Every release tag MUST pass the semver validation gate and human approval before creation.

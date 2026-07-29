@@ -20,6 +20,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
   late TextEditingController _descController;
   String? _selectedProteinSource;
   List<String> _selectedIngredients = [];
+  bool _excludeFromAuto = false;
 
   @override
   void initState() {
@@ -28,6 +29,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
     _descController = TextEditingController(text: widget.meal?.description ?? '');
     _selectedProteinSource = widget.meal?.proteinSource;
     _selectedIngredients = List.from(widget.meal?.ingredients ?? []);
+    _excludeFromAuto = widget.meal?.excludeFromAuto ?? false;
   }
 
   @override
@@ -55,6 +57,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
           proteinSource: _selectedProteinSource,
           ingredients: _selectedIngredients,
           createdBy: userId,
+          excludeFromAuto: _excludeFromAuto,
         );
         await repo.addMeal(dbId, newMeal);
       } else {
@@ -64,6 +67,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
           description: _descController.text,
           proteinSource: _selectedProteinSource,
           ingredients: _selectedIngredients,
+          excludeFromAuto: _excludeFromAuto,
         );
         await repo.updateMeal(dbId, updatedMeal);
       }
@@ -120,6 +124,16 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
                     TextFormField(
                       controller: _descController,
                       decoration: const InputDecoration(labelText: 'Description'),
+                    ),
+                    SwitchListTile(
+                      title: const Text('Exclude from auto-generation'),
+                      contentPadding: EdgeInsets.zero,
+                      value: _excludeFromAuto,
+                      onChanged: (val) {
+                        setState(() {
+                          _excludeFromAuto = val;
+                        });
+                      },
                     ),
                     const SizedBox(height: 20),
                     

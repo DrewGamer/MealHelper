@@ -14,6 +14,7 @@ void main() {
         'last_used_date': Timestamp.fromDate(DateTime(2023, 1, 1)),
         'next_upcoming_date': Timestamp.fromDate(DateTime(2023, 1, 15)),
         'created_by': 'user1',
+        'exclude_from_auto': true,
       };
 
       final meal = Meal.fromMap(data, 'meal_1');
@@ -27,6 +28,7 @@ void main() {
       expect(meal.createdBy, 'user1');
       expect(meal.lastUsedDate, DateTime(2023, 1, 1));
       expect(meal.nextUpcomingDate, DateTime(2023, 1, 15));
+      expect(meal.excludeFromAuto, true);
     });
 
     test('toMap serializes new fields correctly', () {
@@ -40,6 +42,7 @@ void main() {
         lastUsedDate: DateTime(2023, 1, 1),
         nextUpcomingDate: DateTime(2023, 1, 15),
         createdBy: 'user1',
+        excludeFromAuto: true,
       );
 
       final map = meal.toMap();
@@ -49,6 +52,7 @@ void main() {
       expect(map['tags'], ['old']);
       expect(map['last_used_date'], DateTime(2023, 1, 1));
       expect(map['next_upcoming_date'], DateTime(2023, 1, 15));
+      expect(map['exclude_from_auto'], true);
     });
 
     test('copyWith updates new fields', () {
@@ -63,12 +67,14 @@ void main() {
         proteinSource: 'Beef',
         ingredients: ['Tomato'],
         nextUpcomingDate: DateTime(2023, 1, 15),
+        excludeFromAuto: true,
       );
 
       expect(updated.proteinSource, 'Beef');
       expect(updated.ingredients, ['Tomato']);
       expect(updated.name, 'M');
       expect(updated.nextUpcomingDate, DateTime(2023, 1, 15));
+      expect(updated.excludeFromAuto, true);
     });
   });
 }

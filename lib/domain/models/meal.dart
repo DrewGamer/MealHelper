@@ -9,6 +9,7 @@ class Meal {
   final DateTime? lastUsedDate;
   final DateTime? nextUpcomingDate;
   final String createdBy;
+  final bool excludeFromAuto;
 
   Meal({
     required this.id,
@@ -20,6 +21,7 @@ class Meal {
     this.lastUsedDate,
     this.nextUpcomingDate,
     required this.createdBy,
+    this.excludeFromAuto = false,
   });
 
   factory Meal.fromMap(Map<String, dynamic> data, String documentId) {
@@ -33,6 +35,7 @@ class Meal {
       lastUsedDate: data['last_used_date']?.toDate(),
       nextUpcomingDate: data['next_upcoming_date']?.toDate(),
       createdBy: data['created_by'] ?? '',
+      excludeFromAuto: data['exclude_from_auto'] ?? false,
     );
   }
 
@@ -46,6 +49,7 @@ class Meal {
       'last_used_date': lastUsedDate,
       'next_upcoming_date': nextUpcomingDate,
       'created_by': createdBy,
+      'exclude_from_auto': excludeFromAuto,
     };
   }
 
@@ -59,6 +63,7 @@ class Meal {
     DateTime? lastUsedDate,
     DateTime? nextUpcomingDate,
     String? createdBy,
+    bool? excludeFromAuto,
   }) {
     return Meal(
       id: id ?? this.id,
@@ -70,6 +75,7 @@ class Meal {
       lastUsedDate: lastUsedDate ?? this.lastUsedDate,
       nextUpcomingDate: nextUpcomingDate ?? this.nextUpcomingDate,
       createdBy: createdBy ?? this.createdBy,
+      excludeFromAuto: excludeFromAuto ?? this.excludeFromAuto,
     );
   }
 }

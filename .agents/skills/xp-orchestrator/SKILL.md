@@ -83,7 +83,7 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
    - Write the updated `CHANGELOG.md`, then stage and commit: `git add CHANGELOG.md` followed by `git commit -m "docs: update changelog for <feature-name>"`.
 2. Use the GitHub CLI (`gh pr create`) to create a pull request for the feature branch.
 3. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge to main has been completed.
-4. Once the branch merge is confirmed, check out the `main` branch and pull the latest changes (`git checkout main && git pull`).
+4. Once the branch merge is confirmed, check out the `main` branch, pull the latest changes (`git checkout main && git pull`), and delete the local feature branch (`git branch -d <feature-branch>`).
 5. **Release Gate (B10 + B16):**
    - Read the `## [Unreleased]` section from `CHANGELOG.md` to summarize what changed.
    - Invoke the `human-checkpoint` skill. Present the changelog summary and ask: "Would you like to create a release for these changes?" Offer these options:

@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [v1.0.0] - 2026-07-29
 - **Added**: Option to exclude meals from auto-generation
 - **Added**: Explicit Cancel button on Assign Meal dialog to differentiate from Clear Day
 - **Added**: Release v0.12.0-beta

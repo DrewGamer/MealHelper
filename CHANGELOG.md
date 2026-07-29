@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+- **Added**: Explicit Cancel button on Assign Meal dialog to differentiate from Clear Day
 - **Added**: Release v0.12.0-beta
 - **Added**: Vary Protein Source Feature
 - **Added**: Consecutive days auto-fill support and end-of-week overflow dialog

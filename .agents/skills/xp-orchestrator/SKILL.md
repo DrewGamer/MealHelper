@@ -65,11 +65,33 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 3. If the human approves the release, proceed to Phase 5.
 
 **Phase 5: GitHub PR & Release**
-1. Use the GitHub CLI (`gh pr create`) to create a pull request for the feature branch.
-2. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge to main has been completed.
-3. Once the branch merge is confirmed, check out the `main` branch and pull the latest changes (`git checkout main && git pull`).
-4. Invoke the `release-packager` skill to bundle the completed code into a final release artifact from the main branch.
-5. **Determine Next Semver Tag (S7 + S4):**
+1. **Update Changelog (S7):**
+   - RELOAD `.agents/plans/xp-state.md` into your context. (B4 PLAN MEMENTO)
+   - Run `git log main..HEAD --oneline` to get the commit history for the feature branch.
+   - Read Section 2 (Active Goal) and Section 4 (Work Backlog) from `.agents/plans/xp-state.md` to identify the feature name and all completed tasks.
+   - Check if `CHANGELOG.md` exists at the project root. If it does NOT exist, create it with this header:
+     ```
+     # Changelog
+
+     All notable changes to this project will be documented in this file.
+     ```
+   - Read the existing `CHANGELOG.md` content. Compile a new changelog entry under a `## [Unreleased]` section. Categorize each completed backlog item as:
+     - **Added**: New user-facing capabilities.
+     - **Changed**: Modifications to existing behavior.
+     - **Fixed**: Bug fixes or issues found during manual testing.
+   - If an `## [Unreleased]` section already exists (from a prior cycle where the release was skipped), APPEND the new entries to it — do not overwrite prior entries. If no `## [Unreleased]` section exists, create one after the header.
+   - Write the updated `CHANGELOG.md`, then stage and commit: `git add CHANGELOG.md` followed by `git commit -m "docs: update changelog for <feature-name>"`.
+2. Use the GitHub CLI (`gh pr create`) to create a pull request for the feature branch.
+3. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge to main has been completed.
+4. Once the branch merge is confirmed, check out the `main` branch and pull the latest changes (`git checkout main && git pull`).
+5. **Release Gate (B10 + B16):**
+   - Read the `## [Unreleased]` section from `CHANGELOG.md` to summarize what changed.
+   - Invoke the `human-checkpoint` skill. Present the changelog summary and ask: "Would you like to create a release for these changes?" Offer these options:
+     - **Create release**: Proceed with packaging, tagging, and release creation (steps 6-10).
+     - **Skip release**: End Phase 5 now. Changes are merged to main but no release artifact is created.
+   - If the human selects **Skip release**: update `.agents/plans/xp-state.md` Section 6 to record `- [x] Release Skipped (human decision)`, then **HALT Phase 5** (B16 EARLY EXIT). Do NOT invoke release-packager, do NOT create a tag, do NOT create a release.
+6. Invoke the `release-packager` skill to bundle the completed code into a final release artifact from the main branch.
+7. **Determine Next Semver Tag (S7 + S4):**
    - Run `git tag -l "v*" --sort=-v:refname` to list all existing version tags, sorted newest first.
    - Parse the output to find the latest tag matching the semver pattern: `v<MAJOR>.<MINOR>.<PATCH>[-<prerelease>]`.
    - Suggest the next version tag using these rules:
@@ -77,18 +99,22 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
      - If the latest tag has a pre-release label (e.g. `v0.9.0-beta`), suggest incrementing MINOR (e.g. `v0.10.0-beta`).
      - If the latest tag is stable (no pre-release label), suggest incrementing MINOR (e.g. `v1.0.0` -> `v1.1.0`).
    - Validate the proposed tag against the semver regex: `^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$`. If validation fails, regenerate (max 3 attempts).
-6. **Tag Approval Gate (B10):**
+8. **Tag Approval Gate (B10):**
    - Invoke the `human-checkpoint` skill. Present the proposed tag, the latest existing tag, and the rationale (minor bump / patch bump / graduation from pre-release). Offer these options:
      - **Approve**: Use the proposed tag as-is.
      - **Override**: The human provides their own tag (e.g. to do a major bump, patch bump, or drop the pre-release label to graduate to stable).
    - If the human provides a custom tag, validate it against the semver regex. If it fails, inform the human the tag does not follow semver conventions and ask them to revise.
-7. **Create Release (S7):**
-   - Run `gh release create <approved-tag> <artifact-path> --title "<approved-tag>" --notes "Release <approved-tag>"` to create the release with the approved semver tag.
+9. **Create Release with Changelog Notes (S7):**
+   - Read the `## [Unreleased]` section from `CHANGELOG.md` and use its content as the release notes.
+   - Run `gh release create <approved-tag> <artifact-path> --title "<approved-tag>" --notes "<changelog-notes>"` to create the release with the approved semver tag and changelog-sourced notes.
    - Verify the release was created successfully by checking the exit code.
-8. Update `.agents/plans/xp-state.md` to record the final release tag. Once the release is fully completed, halt execution.
+   - After successful creation, update `CHANGELOG.md`: replace `## [Unreleased]` with `## [<approved-tag>] - <YYYY-MM-DD>` (using today's date), and add a fresh empty `## [Unreleased]` section above it. Commit and push: `git add CHANGELOG.md && git commit -m "docs: mark changelog <approved-tag>" && git push origin main`.
+10. Update `.agents/plans/xp-state.md` to record the final release tag. Once the release is fully completed, halt execution.
 
 ## ANTI-PATTERNS
 - **Ghost Todos**: Failing to update the `.agents/plans/xp-state.md` status fields as work progresses.
 - **Skipping Gates**: Proceeding to Development without Architecture approval, to Release without PR approval, or halting before branch merge confirmation.
 - **Unbounded Loops**: Failing to pass the exact failure feedback to the personas when a human checkpoint requests changes.
 - **Ad-Hoc Tags**: Creating release tags without reading existing tags from git or validating against the semver regex. Every release tag MUST pass the semver validation gate and human approval before creation.
+- **Ad-Hoc Release Notes**: Using generic or LLM-generated release notes instead of sourcing them from `CHANGELOG.md`. All release notes MUST come from the accumulated `## [Unreleased]` section.
+- **Bypassing Release Gate**: Proceeding directly to packaging after merge without presenting the release gate to the human. Every merge MUST go through the release gate so the human can decide whether a release is warranted.

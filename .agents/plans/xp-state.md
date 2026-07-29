@@ -1,12 +1,12 @@
 # Mobile App XP State (B4 Plan Memento)
 
 ## 1. Project Context
-**Project Name:** Flexible Meal Sorting
-**Current Stage:** Phase 3: Intermediate Release Packaging
+**Project Name:** Assign Meal Dialog Cancel Button
+**Current Stage:** Phase 2: XP Development Loop
 **Primary Tech Stack:** Flutter, Dart, Riverpod, Firebase Firestore
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Add client-side alphabetical sorting for Meals on the Meals Screen and Assign Meal dialog, with a foundation for future sorting methods using an extensible enum and SharedPreferences.
+**Current Objective:** Add a cancel button to the assign meal dialog to differentiate between canceling and clearing the day.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
@@ -14,11 +14,13 @@
 
 ## 3. Architecture & Tech Stack
 **Approved Architecture & Enhancements:**
-1. **Sort Option Enum**: `MealSortOption` enum with `alphabetical` as the default.
-2. **State Management**: `MealSortNotifier` exposed via `mealSortProvider` using `shared_preferences` to persist the preference.
-3. **Sorting Extension**: `applySort(MealSortOption)` extension on `Iterable<Meal>` that delegates to standard Dart list sorting.
-4. **UI Integration - Meals Screen**: Watch `mealSortProvider`, apply sorting to `mealsStreamProvider` before passing to `ListView.builder`. Add a sorting toggle in the AppBar.
-5. **UI Integration - Assign Meal Dialog**: Watch `mealSortProvider` in `MealPlanDetailScreen._assignMeal()`, apply sorting to `allMeals` before populating `AlertDialog`.
+1. **Dialog Return Type**: Change `showDialog` return type to `<Object?>`.
+2. **Distinct Intents**:
+   - Assigning a meal: Returns `Meal` object.
+   - Clearing a meal: Returns sentinel string `'CLEAR'`.
+   - Cancelling: Returns `null`.
+3. **UI Updates**: Add a Cancel button to the `AlertDialog` in `_assignMeal`.
+4. **State Handling**: Check the returned object and only execute Firestore updates if it's a `Meal` or `'CLEAR'`.
 
 **Dependencies / Frameworks:**
 - Flutter (Material 3)
@@ -29,23 +31,17 @@
 ## 4. Work Backlog (B7 Todo Commands)
 | ID | Title | Status | Assigned Persona | Dependencies |
 |---|---|---|---|---|
-| T1 | Create MealSortOption enum | done | xp-developer | - |
-| T2 | Create applySort extension on Iterable<Meal> | done | xp-developer | T1 |
-| T3 | Create MealSortNotifier and mealSortProvider with SharedPreferences | done | xp-developer | T2 |
-| T4 | Update MealsListScreen to apply sorting | done | xp-developer | T3 |
-| T5 | Update MealPlanDetailScreen._assignMeal to apply sorting | done | xp-developer | T3 |
+| T1 | Update `_assignMeal` dialog UI and return types | complete | xp-developer | - |
+| T2 | Update `_assignMeal` state handling for `'CLEAR'` and `null` | complete | xp-developer | T1 |
 
 ## 5. Sub-Agent Coordination
-Implementing Flexible Meal Sorting using an extensible enum and Riverpod state management.
+Implementing explicit cancel vs clear day logic in Assign Meal Dialog.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved
 - [x] XP Development Loop Completed & Analyzed Clean
-- [ ] PR 1 Reviewed & Approved
+- [ ] PR Reviewed & Approved
 - [x] Release Package Generated (Continuous Build APK uploaded to tag continuous-build)
-- [x] Consecutive Days Feature Developed
-- [x] Vary Protein Source Feature Developed
-- [x] Final Release Created: v0.11.0-beta
 
 ## 7. Release Configuration
 **Continuous Release Tag:** continuous-build

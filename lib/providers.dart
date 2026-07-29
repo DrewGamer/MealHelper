@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/database_repository.dart';
 import 'data/repositories/plan_repository.dart';
 import 'data/repositories/ingredient_options_repository.dart';
 import 'domain/models/meal.dart';
+import 'domain/models/meal_sort_option.dart';
+
 import 'domain/models/meal_plan.dart';
 import 'domain/models/ingredient_options.dart';
 import 'application/services/meal_sync_service.dart';
@@ -113,4 +116,35 @@ final ingredientOptionsStreamProvider = StreamProvider<IngredientOptions>((ref) 
 
 final databaseNameProvider = StreamProvider.family<String, String>((ref, String dbId) {
   return ref.watch(databaseRepositoryProvider).streamDatabaseName(dbId);
+});
+
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError();
+});
+
+class MealSortNotifier extends Notifier<MealSortOption> {
+  static const _sortPrefKey = 'meal_sort_preference';
+
+  @override
+  MealSortOption build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final savedOption = prefs.getString(_sortPrefKey);
+    if (savedOption != null) {
+      return MealSortOption.values.firstWhere(
+        (e) => e.name == savedOption,
+        orElse: () => MealSortOption.alphabetical,
+      );
+    }
+    return MealSortOption.alphabetical;
+  }
+
+  void setSortOption(MealSortOption option) {
+    final prefs = ref.read(sharedPreferencesProvider);
+    prefs.setString(_sortPrefKey, option.name);
+    state = option;
+  }
+}
+
+final mealSortProvider = NotifierProvider<MealSortNotifier, MealSortOption>(() {
+  return MealSortNotifier();
 });

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/meal.dart';
+import '../../domain/models/meal_sort_option.dart';
 import '../../application/services/meal_selection_engine.dart';
 import '../../providers.dart';
 
@@ -308,6 +309,9 @@ class MealPlanDetailScreen extends ConsumerWidget {
   static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   Future<void> _assignMeal(BuildContext context, WidgetRef ref, MealPlan currentPlan, int dayIndex, List<Meal> allMeals) async {
+    final sortOption = ref.read(mealSortProvider);
+    final sortedMeals = allMeals.applySort(sortOption);
+
     final Meal? selectedMeal = await showDialog<Meal>(
       context: context,
       builder: (context) {
@@ -317,9 +321,9 @@ class MealPlanDetailScreen extends ConsumerWidget {
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: allMeals.length,
+              itemCount: sortedMeals.length,
               itemBuilder: (context, i) {
-                final meal = allMeals[i];
+                final meal = sortedMeals[i];
                 return ListTile(
                   title: Text(meal.name),
                   onTap: () => Navigator.pop(context, meal),

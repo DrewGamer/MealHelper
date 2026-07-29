@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/firebase_options.dart';
 import 'providers.dart';
 import 'presentation/screens/home_screen.dart';
@@ -17,7 +18,14 @@ void main() async {
     debugPrint('Firebase init error: $e');
   }
   
-  runApp(const ProviderScope(child: MealHelperApp()));
+  final prefs = await SharedPreferences.getInstance();
+  
+  runApp(ProviderScope(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+    child: const MealHelperApp(),
+  ));
 }
 
 class MealHelperApp extends ConsumerWidget {

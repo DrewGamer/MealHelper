@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
+import '../../domain/models/meal_sort_option.dart';
 import 'meal_detail_screen.dart';
 
 class MealsListScreen extends ConsumerWidget {
@@ -13,16 +14,34 @@ class MealsListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meals Database'),
+        actions: [
+          PopupMenuButton<MealSortOption>(
+            icon: const Icon(Icons.sort),
+            initialValue: ref.watch(mealSortProvider),
+            onSelected: (option) {
+              ref.read(mealSortProvider.notifier).setSortOption(option);
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: MealSortOption.alphabetical,
+                child: Text('Alphabetical'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: mealsAsyncValue.when(
         data: (meals) {
-          if (meals.isEmpty) {
+          final sortOption = ref.watch(mealSortProvider);
+          final sortedMeals = meals.applySort(sortOption);
+
+          if (sortedMeals.isEmpty) {
             return const Center(child: Text('No meals found. Add some!'));
           }
           return ListView.builder(
-            itemCount: meals.length,
+            itemCount: sortedMeals.length,
             itemBuilder: (context, index) {
-              final meal = meals[index];
+              final meal = sortedMeals[index];
               final subtitleParts = <String>[];
               if (meal.proteinSource != null && meal.proteinSource!.isNotEmpty) {
                 subtitleParts.add(meal.proteinSource!);

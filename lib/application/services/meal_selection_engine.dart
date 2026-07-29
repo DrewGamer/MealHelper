@@ -113,7 +113,7 @@ class MealSelectionEngine {
     if (emptySlots.isEmpty || availableMeals.isEmpty) return assignments;
 
     final sortedSlots = List<DateTime>.from(emptySlots)..sort();
-    List<Meal> currentMeals = List.from(availableMeals);
+    List<Meal> currentMeals = List.from(availableMeals.where((m) => !m.excludeFromAuto));
 
     // Break into contiguous sub-lists
     List<List<DateTime>> contiguousSubLists = [];

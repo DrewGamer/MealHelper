@@ -4,7 +4,6 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/meal.dart';
 import '../../domain/models/meal_sort_option.dart';
-import '../../application/services/meal_selection_engine.dart';
 import '../../providers.dart';
 
 class AutoPopulateConfigBottomSheet extends StatefulWidget {
@@ -312,7 +311,7 @@ class MealPlanDetailScreen extends ConsumerWidget {
     final sortOption = ref.read(mealSortProvider);
     final sortedMeals = allMeals.applySort(sortOption);
 
-    final Meal? selectedMeal = await showDialog<Meal>(
+    final Object? result = await showDialog<Object?>(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -334,12 +333,18 @@ class MealPlanDetailScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, null),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'CLEAR'),
               child: const Text('Clear Day'),
             ),
           ],
         );
       },
     );
+
+    if (result == null) return;
 
     final dbId = ref.read(activeDatabaseIdStreamProvider).value;
     if (dbId == null) return;
@@ -356,9 +361,9 @@ class MealPlanDetailScreen extends ConsumerWidget {
     for (final p in plansToUpdate) {
       final pTargetOffset = targetDate.difference(DateTime(p.startDate.year, p.startDate.month, p.startDate.day)).inDays;
       final newMealIds = Map<int, String>.from(p.mealIdsByDay);
-      if (selectedMeal != null) {
-        newMealIds[pTargetOffset] = selectedMeal.id;
-      } else {
+      if (result is Meal) {
+        newMealIds[pTargetOffset] = result.id;
+      } else if (result == 'CLEAR') {
         newMealIds.remove(pTargetOffset);
       }
       final updatedPlan = p.copyWith(mealIdsByDay: newMealIds);

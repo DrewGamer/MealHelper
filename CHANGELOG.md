@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ## [v1.0.0] - 2026-07-29
 - **Added**: Option to exclude meals from auto-generation
 - **Added**: Explicit Cancel button on Assign Meal dialog to differentiate from Clear Day
-- **Added**: Release v0.12.0-beta
+- **Added**: Meal list and meal selection sorting (alphabetical only currently)
 - **Added**: Vary Protein Source Feature
 - **Added**: Consecutive days auto-fill support and end-of-week overflow dialog
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'collaboration_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -334,6 +335,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () async {
+                  final sourceDbId = 'UXnEdtuqk3PdJsiSMJSJZlYlrG92';
+                  final targetDbId = 'LxucwRUJmaaYeEQkKUGy4sb02Qp2';
+
+                  final firestore = FirebaseFirestore.instance;
+                  final batch = firestore.batch();
+                  
+                  // Copy Settings
+                  final sourceSettings = await firestore.collection('databases').doc(sourceDbId).collection('settings').doc('ingredient_options').get();
+                  if (sourceSettings.exists) {
+                    batch.set(firestore.collection('databases').doc(targetDbId).collection('settings').doc('ingredient_options'), sourceSettings.data()!);
+                  }
+
+                  // Copy Meals
+                  final sourceMeals = await firestore.collection('databases').doc(sourceDbId).collection('meals').get();
+                  for (var mealDoc in sourceMeals.docs) {
+                    batch.set(firestore.collection('databases').doc(targetDbId).collection('meals').doc(mealDoc.id), mealDoc.data());
+                  }
+
+                  await batch.commit();
+                  print('COPIED SUCCESSFULLY!');
+                },
+                child: const Text('COPY DATA TO TEST ACCOUNT', style: TextStyle(color: Colors.white)),
+              ),
               ListTile(
                 leading: const Icon(Icons.person),
                 title: Text(isAnonymous ? 'Anonymous User' : (user.email ?? 'Linked Account')),

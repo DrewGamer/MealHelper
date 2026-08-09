@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+- **Fixed**: Implemented secure Firestore Security Rules to resolve the Test Mode expiration.
+- **Added**: Added `firestore.rules` and `firebase.json` for strict workspace access control.
 
 ## [v1.0.0] - 2026-07-29
 - **Added**: Option to exclude meals from auto-generation

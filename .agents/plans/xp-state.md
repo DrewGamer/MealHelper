@@ -1,12 +1,12 @@
 # Mobile App XP State (B4 Plan Memento)
 
 ## 1. Project Context
-**Project Name:** Exclude Meal from Auto-Generation
-**Current Stage:** Phase 2: XP Development Loop
-**Primary Tech Stack:** Flutter, Dart, Riverpod, Firebase Firestore
+**Project Name:** Fix Firestore Test Mode Expiration
+**Current Stage:** Phase 4: Manual Testing Loop
+**Primary Tech Stack:** Flutter, Dart, Riverpod, Firebase Firestore, Firebase CLI
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Add a toggle to exclude a meal from auto-generation in the meal edit/add screen and apply it during auto-fill.
+**Current Objective:** Implement production-ready Firestore Security Rules to secure the database and fix the "Test Mode" expiration warning.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
@@ -14,11 +14,16 @@
 
 ## 3. Architecture & Tech Stack
 **Approved Architecture & Enhancements:**
-1. **Model / Database Updates**: Add `excludeFromAuto` (bool, default false) to `Meal` model, serialization, and `copyWith`. Update `meal_test.dart`.
-2. **UI Updates**: Add `SwitchListTile` to `_MealDetailScreenState` for "Exclude from auto-generation".
-3. **Logic Updates**: Update `meal_selection_engine.dart` `populateSlots` to filter out `m.excludeFromAuto`.
+1. **Security Model**:
+   - `users`: Users read/write their own profile (`request.auth.uid == userId`).
+   - `databases`: Authenticated users can create workspaces, list workspaces if they are collaborators, and update them to join.
+   - Subcollections: Restricted to collaborators.
+2. **Implementation**:
+   - Create `firestore.rules` and `firebase.json`.
+   - Deploy using Firebase CLI.
 
 **Dependencies / Frameworks:**
+- Firebase CLI (`firebase-tools`)
 - Flutter (Material 3)
 - flutter_riverpod
 - cloud_firestore
@@ -26,21 +31,21 @@
 ## 4. Work Backlog (B7 Todo Commands)
 | ID | Title | Status | Assigned Persona | Dependencies |
 |---|---|---|---|---|
-| T1 | Update `Meal` model and tests | complete | xp-developer | - |
-| T2 | Update `_MealDetailScreenState` UI and save logic | complete | xp-developer | T1 |
-| T3 | Update `meal_selection_engine.dart` to filter meals | complete | xp-developer | T1 |
+| T1 | Ensure Firebase CLI is installed and configured | complete | xp-developer | - |
+| T2 | Create `firestore.rules` and `firebase.json` | complete | xp-developer | T1 |
+| T3 | Deploy Firestore Rules | complete | xp-developer | T2 |
 
 ## 5. Sub-Agent Coordination
-Implementing "Exclude from auto-generation" toggle in Meal Edit screen and applying in auto-generation engine.
+Implementing secure Firestore rules to replace Test Mode.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved
 - [x] XP Development Loop Completed & Analyzed Clean
-- [x] PR Reviewed & Approved
+- [ ] PR Reviewed & Approved
 - [x] Release Package Generated (Continuous Build APK uploaded to tag continuous-build)
-- [x] Release Gate Passed (Tag: v1.0.0)
+- [ ] Release Gate Passed
 
 ## 7. Release Configuration
 **Continuous Release Tag:** continuous-build
 **Continuous Release Name:** Continuous Build
-**Build Type Override:**
+**Build Type Override:** 

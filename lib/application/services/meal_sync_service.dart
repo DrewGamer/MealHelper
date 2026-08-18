@@ -5,6 +5,7 @@ import '../../data/repositories/database_repository.dart';
 
 class MealSyncService {
   final PlanRepository _planRepo;
+  // ignore: unused_field
   final DatabaseRepository _dbRepo;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -68,9 +69,7 @@ class MealSyncService {
         if (date.isBefore(today)) {
           lastUsed = date;
         } else if (date.isAtSameMomentAs(today) || date.isAfter(today)) {
-          if (nextUpcoming == null) {
-            nextUpcoming = date;
-          }
+          nextUpcoming ??= date;
         }
       }
 

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - **Fixed**: Implemented secure Firestore Security Rules to resolve the Test Mode expiration.
 - **Added**: Added `firestore.rules` and `firebase.json` for strict workspace access control.
+- **Fixed**: Standardized Android launcher, app drawer, and recents display name to "Meal Helper" via native `strings.xml` and manifest activity labels.
 
 ## [v1.0.0] - 2026-07-29
 - **Added**: Option to exclude meals from auto-generation

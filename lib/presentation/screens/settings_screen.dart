@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'collaboration_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});

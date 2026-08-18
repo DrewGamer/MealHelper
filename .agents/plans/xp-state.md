@@ -1,50 +1,59 @@
 # Mobile App XP State (B4 Plan Memento)
 
 ## 1. Project Context
-**Project Name:** Standardize Application Display Name
-**Current Stage:** Complete (Merged to Main)
-**Primary Tech Stack:** Flutter, Dart, Android Native XML Resources, Android Gradle
+**Project Name:** Feature-First Architecture Migration
+**Current Stage:** Manual Testing & Review (Phase 4)
+**Primary Tech Stack:** Flutter, Dart, Riverpod, Firebase Firestore, Firebase Auth
 
 ## 2. Active Goal & Constraints (B8 Attention Anchor)
-**Current Objective:** Update the application display name on Android launcher, app drawer, and recents screen to "Meal Helper" using native string resources and manifest activity labels.
+**Current Objective:** Migrate MealHelper codebase from layer-first structure to Feature-First Architecture following official Dart/Flutter/Riverpod best practices with zero behavior change.
 **Hard Constraints:** 
 - MUST pass human checkpoint for architecture approval.
 - MUST pass human checkpoint for PR reviews.
 - MUST use environment-manager for new dependencies.
+- MUST preserve 100% functional parity and zero regression.
+- MUST pass `flutter analyze` and `flutter test` at every stage.
 
 ## 3. Architecture & Tech Stack
-**Approved Architecture & Enhancements:**
-1. **Resource Layer**:
-   - Add `android/app/src/main/res/values/strings.xml` with `app_name` set to `Meal Helper`.
-2. **Manifest Layer**:
-   - Update `android/app/src/main/AndroidManifest.xml` so both `<application>` and `<activity android:name=".MainActivity">` explicitly use `android:label="@string/app_name"`.
-3. **Cross-Platform Verification**:
-   - Ensure `ios/Runner/Info.plist` has `CFBundleDisplayName` and `CFBundleName` set to `Meal Helper`.
-   - Ensure `lib/main.dart` `MaterialApp(title: ...)` is `Meal Helper`.
-4. **Cache Invalidation**:
-   - Run `flutter clean` prior to build/verification.
+**Approved Architecture:**
+See [.agents/plans/feature_first_refactor_plan.md](file:///C:/SourceCode/MealHelper/.agents/plans/feature_first_refactor_plan.md)
+- `lib/core/` (constants, utils, shared providers, firebase_options)
+- `lib/features/auth/` (data, presentation, widgets)
+- `lib/features/collaboration/` (data, presentation, widgets)
+- `lib/features/ingredients/` (domain, data, presentation)
+- `lib/features/meals/` (domain, data, presentation, widgets)
+- `lib/features/plans/` (domain, data, application, presentation, widgets)
+- `lib/features/settings/` (presentation)
+- `lib/features/home/` (presentation)
+- `test/features/` mirrored structure
 
 **Dependencies / Frameworks:**
 - Flutter SDK (v3.x / Dart 3.x)
-- Android SDK & Gradle Tools
+- flutter_riverpod
+- cloud_firestore
+- firebase_auth
+- shared_preferences
 
 ## 4. Work Backlog (B7 Todo Commands)
 | ID | Title | Status | Assigned Persona | Dependencies |
 |---|---|---|---|---|
-| T1 | Create Android `strings.xml` resource | completed | xp-developer | - |
-| T2 | Update `AndroidManifest.xml` application and activity labels | completed | xp-developer | T1 |
-| T3 | Verify cross-platform configs (`Info.plist`, `main.dart`) | completed | xp-developer | - |
-| T4 | Clean cache & verify build outputs | completed | xp-developer | T2, T3 |
+| T1 | Core Foundation & Constants Setup | completed | xp-developer | - |
+| T2 | Auth Feature Migration & Encapsulation | completed | xp-developer | T1 |
+| T3 | Collaboration & Workspace Migration | completed | xp-developer | T1, T2 |
+| T4 | Ingredients Feature Migration | completed | xp-developer | T1, T3 |
+| T5 | Meals Feature Migration & Sort Notifier | completed | xp-developer | T1, T4 |
+| T6 | Plans Feature & Engine Migration | completed | xp-developer | T1, T5 |
+| T7 | Settings, Navigation & Main Bootstrap | completed | xp-developer | T2, T3, T4, T5, T6 |
+| T8 | Test Suite Mirroring & Legacy Cleanup | completed | xp-developer | T7 |
 
 ## 5. Sub-Agent Coordination
-Work completed, tested, PR #11 merged to `main`. Release skipped per human decision at release gate.
+All T1-T8 migration tasks complete, `flutter analyze` clean with 0 warnings/errors, and `flutter test` 100% pass rate. Intermediate release package uploaded to `continuous-build` on GitHub. Ready for manual testing & PR review.
 
 ## 6. Checkpoints & History
 - [x] Architecture Approved
 - [x] XP Development Loop Completed & Analyzed Clean
 - [x] Release Package Generated (Continuous Build APK uploaded to tag continuous-build)
-- [x] PR Reviewed & Approved
-- [x] Release Skipped (human decision)
+- [ ] PR Reviewed & Approved
 
 ## 7. Release Configuration
 **Continuous Release Tag:** continuous-build

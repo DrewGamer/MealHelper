@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.1.0] - 2026-08-25
+
 ### Added
 - Tabbed navigation on Ingredients screen with dedicated tabs and item count badges for "Protein Sources" and "Ingredients".
 - Persistent sort button in Ingredients screen AppBar supporting alphabetical sorting.
@@ -84,7 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Phase 1: Authentication, Dashboard shell, and core state management.
 
-[Unreleased]: https://github.com/DrewGamer/MealHelper/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/DrewGamer/MealHelper/compare/v1.1.0...HEAD
+[v1.1.0]: https://github.com/DrewGamer/MealHelper/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/DrewGamer/MealHelper/compare/v0.9.0-beta...v1.0.0
 [v0.9.0-beta]: https://github.com/DrewGamer/MealHelper/compare/v0.8.0-beta...v0.9.0-beta
 [v0.8.0-beta]: https://github.com/DrewGamer/MealHelper/compare/v0.7.0-beta...v0.8.0-beta

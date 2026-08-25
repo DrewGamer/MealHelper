@@ -74,18 +74,22 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
      # Changelog
 
      All notable changes to this project will be documented in this file.
+
+     The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+     and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
      ```
-   - Read the existing `CHANGELOG.md` content. Compile a new changelog entry under a `## [Unreleased]` section. Categorize each completed backlog item as:
-     - **Added**: New user-facing capabilities.
-     - **Changed**: Modifications to existing behavior.
-     - **Fixed**: Bug fixes or issues found during manual testing.
-   - If an `## [Unreleased]` section already exists (from a prior cycle where the release was skipped), APPEND the new entries to it — do not overwrite prior entries. If no `## [Unreleased]` section exists, create one after the header.
+   - Read the existing `CHANGELOG.md` content. Compile a new changelog entry under a `## [Unreleased]` section. Categorize each completed backlog item using standard Keep a Changelog subheadings (`### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed`, `### Security`):
+     - `### Added`: New user-facing capabilities or features.
+     - `### Changed`: Modifications to existing behavior or architecture.
+     - `### Fixed`: Bug fixes or issues found during manual testing.
+     - `### Security`: Security rules, permissions, or authentication updates.
+   - If an `## [Unreleased]` section already exists (from a prior cycle where the release was skipped), APPEND the new entries under the appropriate category subheadings — do not overwrite prior entries. If no `## [Unreleased]` section exists, create one after the header.
    - Write the updated `CHANGELOG.md`, then stage and commit: `git add CHANGELOG.md` followed by `git commit -m "docs: update changelog for <feature-name>"`.
 2. Use the GitHub CLI (`gh pr create`) to create a pull request for the feature branch.
 3. Invoke the `human-checkpoint` skill to ask the human to confirm that the branch merge to main has been completed.
 4. Once the branch merge is confirmed, check out the `main` branch, pull the latest changes (`git checkout main && git pull`), and delete the local feature branch (`git branch -d <feature-branch>`).
 5. **Release Gate (B10 + B16):**
-   - Read the `## [Unreleased]` section from `CHANGELOG.md` to summarize what changed.
+   - Read the `## [Unreleased]` section from `CHANGELOG.md` to summarize what changed, highlighting user-facing additions and fixes.
    - Invoke the `human-checkpoint` skill. Present the changelog summary and ask: "Would you like to create a release for these changes?" Offer these options:
      - **Create release**: Proceed with packaging, tagging, and release creation (steps 6-10).
      - **Skip release**: End Phase 5 now. Changes are merged to main but no release artifact is created.
@@ -104,11 +108,14 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
      - **Approve**: Use the proposed tag as-is.
      - **Override**: The human provides their own tag (e.g. to do a major bump, patch bump, or drop the pre-release label to graduate to stable).
    - If the human provides a custom tag, validate it against the semver regex. If it fails, inform the human the tag does not follow semver conventions and ask them to revise.
-9. **Create Release with Changelog Notes (S7):**
-   - Read the `## [Unreleased]` section from `CHANGELOG.md` and use its content as the release notes.
-   - Run `gh release create <approved-tag> <artifact-path> --title "<approved-tag>" --notes "<changelog-notes>"` to create the release with the approved semver tag and changelog-sourced notes.
+9. **Create Release with User-Facing Release Notes (S7):**
+   - Read the `## [Unreleased]` section from `CHANGELOG.md` and extract only user-facing entries for the release notes:
+     - Include items from `### Added`, `### Fixed`, and any user-visible capabilities or improvements from `### Changed` or `### Security`.
+     - Exclude internal developer-only items (such as test suite reorganization, internal refactoring, or tool configuration).
+     - If all unreleased changes were internal/developer-only, summarize them simply as: `### Changed` with `- Under-the-hood performance, stability, and security improvements.`
+   - Run `gh release create <approved-tag> <artifact-path> --title "<approved-tag>" --notes "<user-facing-release-notes>"` to create the release with the approved semver tag and user-facing notes.
    - Verify the release was created successfully by checking the exit code.
-   - After successful creation, update `CHANGELOG.md`: replace `## [Unreleased]` with `## [<approved-tag>] - <YYYY-MM-DD>` (using today's date), and add a fresh empty `## [Unreleased]` section above it. Commit and push: `git add CHANGELOG.md && git commit -m "docs: mark changelog <approved-tag>" && git push origin main`.
+   - After successful creation, update `CHANGELOG.md`: replace `## [Unreleased]` with `## [<approved-tag>] - <YYYY-MM-DD>` (using today's date, preserving all entries including internal ones), and add a fresh empty `## [Unreleased]` section above it. Also add/update the comparison link reference at the bottom of `CHANGELOG.md`. Commit and push: `git add CHANGELOG.md && git commit -m "docs: mark changelog <approved-tag>" && git push origin main`.
 10. Update `.agents/plans/xp-state.md` to record the final release tag. Once the release is fully completed, halt execution.
 
 ## ANTI-PATTERNS
@@ -116,5 +123,5 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 - **Skipping Gates**: Proceeding to Development without Architecture approval, to Release without PR approval, or halting before branch merge confirmation.
 - **Unbounded Loops**: Failing to pass the exact failure feedback to the personas when a human checkpoint requests changes.
 - **Ad-Hoc Tags**: Creating release tags without reading existing tags from git or validating against the semver regex. Every release tag MUST pass the semver validation gate and human approval before creation.
-- **Ad-Hoc Release Notes**: Using generic or LLM-generated release notes instead of sourcing them from `CHANGELOG.md`. All release notes MUST come from the accumulated `## [Unreleased]` section.
+- **Ad-Hoc Release Notes**: Using generic or ungrounded release notes instead of deriving them from `CHANGELOG.md`. All release notes MUST be sourced from the accumulated `## [Unreleased]` section, filtering out internal developer-only churn so only user-facing changes are published.
 - **Bypassing Release Gate**: Proceeding directly to packaging after merge without presenting the release gate to the human. Every merge MUST go through the release gate so the human can decide whether a release is warranted.

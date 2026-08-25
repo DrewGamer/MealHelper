@@ -1,38 +1,96 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/utils/string_extensions.dart';
 import '../../collaboration/data/workspace_repository.dart';
 import '../data/ingredient_options_repository.dart';
+import '../data/ingredient_sort_notifier.dart';
+import '../domain/ingredient_sort_option.dart';
 
-class IngredientManagerScreen extends ConsumerWidget {
+class IngredientManagerScreen extends ConsumerStatefulWidget {
   const IngredientManagerScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<IngredientManagerScreen> createState() => _IngredientManagerScreenState();
+}
+
+class _IngredientManagerScreenState extends ConsumerState<IngredientManagerScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final optionsAsync = ref.watch(ingredientOptionsStreamProvider);
+    final sortOption = ref.watch(ingredientSortProvider);
+
+    final options = optionsAsync.value;
+    final proteinCount = options?.proteinSources.length;
+    final ingredientCount = options?.ingredients.length;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ingredients'),
+        actions: [
+          PopupMenuButton<IngredientSortOption>(
+            icon: const Icon(Icons.sort),
+            initialValue: sortOption,
+            onSelected: (option) {
+              ref.read(ingredientSortProvider.notifier).setSortOption(option);
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: IngredientSortOption.alphabetical,
+                child: Text('Alphabetical'),
+              ),
+            ],
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(
+              text: proteinCount != null
+                  ? 'Protein Sources ($proteinCount)'
+                  : 'Protein Sources',
+            ),
+            Tab(
+              text: ingredientCount != null
+                  ? 'Ingredients ($ingredientCount)'
+                  : 'Ingredients',
+            ),
+          ],
+        ),
       ),
       body: optionsAsync.when(
-        data: (options) {
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
+        data: (loadedOptions) {
+          return TabBarView(
+            controller: _tabController,
             children: [
-              _buildSection(
+              _buildList(
                 context,
-                ref,
-                title: 'PROTEIN SOURCES',
-                items: options.proteinSources,
+                items: loadedOptions.proteinSources,
+                sortOption: sortOption,
                 isProtein: true,
               ),
-              const SizedBox(height: 24.0),
-              _buildSection(
+              _buildList(
                 context,
-                ref,
-                title: 'INGREDIENTS',
-                items: options.ingredients,
+                items: loadedOptions.ingredients,
+                sortOption: sortOption,
                 isProtein: false,
               ),
             ],
@@ -41,77 +99,66 @@ class IngredientManagerScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final isProtein = _tabController.index == 0;
+          _showAddDialog(isProtein);
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-  Widget _buildSection(
-    BuildContext context,
-    WidgetRef ref, {
-    required String title,
+  Widget _buildList(
+    BuildContext context, {
     required List<String> items,
+    required IngredientSortOption sortOption,
     required bool isProtein,
   }) {
-    // Sort items alphabetically
-    final sortedItems = items.sortedAlphabetically();
+    final sortedItems = items.applySort(sortOption);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+    if (sortedItems.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'No ${isProtein ? 'protein sources' : 'ingredients'} yet. Tap + to add one.',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
         ),
-        const SizedBox(height: 8.0),
-        Card(
-          clipBehavior: Clip.antiAlias,
-          child: Column(
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      itemCount: sortedItems.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final item = sortedItems[index];
+        return ListTile(
+          title: Text(item),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (sortedItems.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Tap + to add your first ${isProtein ? 'protein source' : 'ingredient'}',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              for (final item in sortedItems)
-                ListTile(
-                  title: Text(item),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        onPressed: () => _showEditDialog(context, ref, item, isProtein),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 20),
-                        onPressed: () => _showDeleteConfirmDialog(context, ref, item, isProtein),
-                      ),
-                    ],
-                  ),
-                ),
-              if (sortedItems.isNotEmpty)
-                const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.add),
-                title: Text('Add ${isProtein ? 'Protein Source' : 'Ingredient'}'),
-                onTap: () => _showAddDialog(context, ref, isProtein),
+              IconButton(
+                icon: const Icon(Icons.edit, size: 20),
+                onPressed: () => _showEditDialog(item, isProtein),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () => _showDeleteConfirmDialog(item, isProtein),
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
-  Future<void> _showAddDialog(BuildContext context, WidgetRef ref, bool isProtein) async {
+  Future<void> _showAddDialog(bool isProtein) async {
     final controller = TextEditingController();
     final result = await showDialog<String>(
       context: context,
@@ -149,7 +196,7 @@ class IngredientManagerScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _showEditDialog(BuildContext context, WidgetRef ref, String oldName, bool isProtein) async {
+  Future<void> _showEditDialog(String oldName, bool isProtein) async {
     final controller = TextEditingController(text: oldName);
     final result = await showDialog<String>(
       context: context,
@@ -187,12 +234,12 @@ class IngredientManagerScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _showDeleteConfirmDialog(BuildContext context, WidgetRef ref, String item, bool isProtein) async {
+  Future<void> _showDeleteConfirmDialog(String item, bool isProtein) async {
     final dbId = ref.read(activeDatabaseIdStreamProvider).value;
     if (dbId == null) return;
 
     final repo = ref.read(ingredientOptionsRepositoryProvider);
-    
+
     int count = 0;
     try {
       if (isProtein) {
@@ -204,7 +251,7 @@ class IngredientManagerScreen extends ConsumerWidget {
       // Ignore count fetch errors
     }
 
-    if (!context.mounted) return;
+    if (!mounted) return;
 
     final confirm = await showDialog<bool>(
       context: context,

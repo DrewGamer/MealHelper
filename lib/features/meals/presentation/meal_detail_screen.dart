@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../../../core/utils/string_extensions.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../collaboration/data/workspace_repository.dart';
 import '../../ingredients/data/ingredient_options_repository.dart';
+import '../../ingredients/data/ingredient_sort_notifier.dart';
+import '../../ingredients/domain/ingredient_sort_option.dart';
 import '../data/meals_repository.dart';
 import '../domain/meal.dart';
 import 'widgets/ingredient_picker_dialog.dart';
@@ -111,6 +112,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.meal != null;
     final ingredientOptionsAsync = ref.watch(ingredientOptionsStreamProvider);
+    final sortOption = ref.watch(ingredientSortProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -173,7 +175,7 @@ class _MealDetailScreenState extends ConsumerState<MealDetailScreen> {
                             value: null,
                             child: Text('None'),
                           ),
-                          ...options.proteinSources.sortedAlphabetically().map((protein) {
+                          ...options.proteinSources.applySort(sortOption).map((protein) {
                             return DropdownMenuItem<String>(
                               value: protein,
                               child: Text(protein),

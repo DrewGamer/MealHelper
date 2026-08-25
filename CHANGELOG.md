@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Tabbed navigation on Ingredients screen with dedicated tabs and item count badges for "Protein Sources" and "Ingredients".
+- Persistent sort button in Ingredients screen AppBar supporting alphabetical sorting.
+- Contextual Floating Action Button (`+`) on Ingredients screen to add Protein Sources or Ingredients based on the active tab.
+- Cross-feature sort propagation from Ingredients preference to the "Add / Edit Meal" protein source dropdown and "Add Ingredients" picker dialog.
+
 ### Changed
 - Migrated codebase architecture to a clean Feature-First structure (`core`, `auth`, `collaboration`, `ingredients`, `meals`, `plans`, `settings`, `home`) adhering to official Flutter/Riverpod guidelines.
 - Reorganized test suite into `test/features/` matching feature domain, application, and data layers with full test coverage preserved.

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../core/utils/string_extensions.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../ingredients/data/ingredient_sort_notifier.dart';
+import '../../../ingredients/domain/ingredient_sort_option.dart';
 
-class IngredientPickerDialog extends StatefulWidget {
+class IngredientPickerDialog extends ConsumerStatefulWidget {
   final List<String> availableIngredients;
   final List<String> initialSelectedIngredients;
 
@@ -26,10 +28,10 @@ class IngredientPickerDialog extends StatefulWidget {
   }
 
   @override
-  State<IngredientPickerDialog> createState() => _IngredientPickerDialogState();
+  ConsumerState<IngredientPickerDialog> createState() => _IngredientPickerDialogState();
 }
 
-class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
+class _IngredientPickerDialogState extends ConsumerState<IngredientPickerDialog> {
   late final List<String> _selectedIngredients;
 
   @override
@@ -40,7 +42,8 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final sortedAvailable = widget.availableIngredients.sortedAlphabetically();
+    final sortOption = ref.watch(ingredientSortProvider);
+    final sortedAvailable = widget.availableIngredients.applySort(sortOption);
 
     return AlertDialog(
       title: const Text('Select Ingredients'),

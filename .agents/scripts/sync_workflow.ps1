@@ -56,13 +56,31 @@ try {
         Write-Host "  [+] Synced personas -> $destPersonas" -ForegroundColor Green
     }
 
-    # 5. Sync self (sync_workflow.ps1)
-    $srcScript = Join-Path $tempDir "scripts\sync_workflow.ps1"
+    # 5. Sync scripts (sync_workflow.ps1, security_gate.template.ps1)
+    $srcScripts = Join-Path $tempDir "scripts"
     $destScripts = Join-Path $agentsDir "scripts"
-    if (Test-Path $srcScript) {
+    if (Test-Path $srcScripts) {
         if (-not (Test-Path $destScripts)) { New-Item -ItemType Directory -Path $destScripts -Force | Out-Null }
-        Copy-Item -Path $srcScript -Destination (Join-Path $destScripts "sync_workflow.ps1") -Force
-        Write-Host "  [+] Synced sync script -> $destScripts\sync_workflow.ps1" -ForegroundColor Green
+        Get-ChildItem -Path $srcScripts | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $destScripts -Force
+            Write-Host "  [+] Synced script -> $destScripts\$($_.Name)" -ForegroundColor Green
+        }
+    }
+
+    # 6. Initialize hooks.json if it doesn't already exist
+    $srcHooks = Join-Path $tempDir "hooks.json"
+    $destHooks = Join-Path $agentsDir "hooks.json"
+    if ((Test-Path $srcHooks) -and (-not (Test-Path $destHooks))) {
+        Copy-Item -Path $srcHooks -Destination $destHooks -Force
+        Write-Host "  [+] Initialized hooks.json -> $destHooks" -ForegroundColor Green
+    }
+
+    # 7. Advise if security_gate.ps1 is missing
+    $secGate = Join-Path $destScripts "security_gate.ps1"
+    $secGateTemplate = Join-Path $destScripts "security_gate.template.ps1"
+    if ((-not (Test-Path $secGate)) -and (Test-Path $secGateTemplate)) {
+        Copy-Item -Path $secGateTemplate -Destination $secGate -Force
+        Write-Host "  [!] Initialized security_gate.ps1 from template. (Remember to customize allowed commands if needed)." -ForegroundColor Yellow
     }
 
     Write-Host "`nWorkflow successfully synced from upstream!" -ForegroundColor Cyan

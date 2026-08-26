@@ -1,11 +1,11 @@
 ---
 name: xp-orchestrator
-description: Use this orchestrator to manage the development lifecycle of a mobile application using extreme programming. It triggers when a new mobile app project is initiated or when new features are added to an existing backlog. It routes tasks to an agentic development team, persists plans in `.agents/plans/`, manages iterative development on a feature branch (with human verification to prevent branch nesting or misalignment), pauses for human architectural approvals, resilient tool acquisition, post-packaging manual testing, and final release packaging from main after PR merge, uploading the artifact to a release tag.
+description: Use this orchestrator to manage the development lifecycle of a software project, mod, or application using extreme programming. It triggers when a new project is initiated or when new features are added to an existing backlog. It routes tasks to an agentic development team, persists plans in `.agents/plans/`, manages iterative development on a feature branch (with human verification to prevent branch nesting or misalignment), pauses for human architectural approvals, resilient tool acquisition, post-packaging manual testing, and final release packaging from main after PR merge, uploading the artifact to a release tag.
 ---
 
-# SKILL: Mobile App XP Lifecycle Orchestrator
+# SKILL: Project XP Lifecycle Orchestrator
 
-This is the primary orchestrator module that realizes the STAFFED PLAN and PIPELINE architectural shapes for the Mobile XP workflow. 
+This is the primary orchestrator module that realizes the STAFFED PLAN and PIPELINE architectural shapes for the XP workflow. 
 
 ## DEPENDENCIES
 - Assets: `assets/xp-state.template.md`
@@ -55,12 +55,12 @@ This is the primary orchestrator module that realizes the STAFFED PLAN and PIPEL
 5. **Upload Artifact to Continuous Release (MANDATORY — never skip this step):**
    - Run `git tag -f <continuous_release_tag>` to force update the local tag to the current commit.
    - Run `git push -f origin <continuous_release_tag>` to push the updated tag to GitHub.
-   - Run `gh release upload <continuous_release_tag> <artifact-path> --clobber` to upload the newly built APK/artifact to the continuous release.
+   - Run `gh release upload <continuous_release_tag> <artifact-path> --clobber` to upload the newly built package/artifact to the continuous release.
    - These three commands MUST all be executed. Do NOT skip the upload even if prior steps took many turns or encountered minor issues.
 6. Update `.agents/plans/xp-state.md` to record the continuous build upload checkpoint. Present the final output path and the continuous release link to the user. Proceed to Phase 4.
 
 **Phase 4: Manual Testing Loop**
-1. Invoke the `human-checkpoint` skill to request a human to manually test the packaged application to identify any issues or bugs.
+1. Invoke the `human-checkpoint` skill to request a human to manually test the packaged artifact/application to identify any issues or bugs.
 2. If the human finds bugs or issues, route back to Phase 2: invoke the `xp-developer` to address the specific feedback.
 3. If the human approves the release, proceed to Phase 5.
 

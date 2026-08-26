@@ -1,7 +1,8 @@
-# Mobile App XP State (B4 Plan Memento)
+# Project XP State (B4 Plan Memento)
 
 ## 1. Project Context
 **Project Name:** 
+**Project Type:** [Application | Game Mod | CLI / Tool | Library | Web]
 **Current Stage:** [Architecture | Development | Review | Release]
 **Primary Tech Stack:**
 
@@ -13,11 +14,13 @@
 - MUST use environment-manager for new dependencies.
 - (Add project-specific constraints here)
 
-## 3. Architecture & Tech Stack
+## 3. Architecture & Tooling
 **Approved Architecture:**
 (Link to architecture diagrams or describe approved components)
-**Dependencies / Frameworks:**
+**Dependencies / Frameworks / Tools:**
 (List required tools. If missing, environment-manager must acquire them)
+**Build / Packaging Command:** (e.g., release script, archive packager, compiler command)
+**Verification / Test Command:** (e.g., test runner, linter, analyzer)
 
 ## 4. Work Backlog (B7 Todo Commands)
 | ID | Title | Status | Assigned Persona | Dependencies |
@@ -36,4 +39,5 @@
 ## 7. Release Configuration
 **Continuous Release Tag:** continuous-build
 **Continuous Release Name:** Continuous Build
+**Target Output Artifact:** (e.g., build/dist/*.zip, output/*.apk, bin/*.tar.gz)
 **Build Type Override:** (leave blank for release default; set to "debug" if human requests debug build)
